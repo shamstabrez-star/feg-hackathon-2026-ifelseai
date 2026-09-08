@@ -705,11 +705,12 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
       }),
       frictionLevel: frictionResult.level,
       frictionReason: frictionResult.reason,
-      experienceResponse: experienceResponse(decision),
+      experienceResponse: experienceResponse(productDecision),
       responsibleGate: gate.state,
-      experienceDecision: decision,
-      outcome,
-      reason: state.lastPlacement || state.exited ? COMPLETION_REASON : why,
+      experienceDecision: productDecision,
+      outcome: productOutcome ?? outcome,
+      reason:
+        inSport && (state.lastPlacement || state.exited) ? COMPLETION_REASON : productWhy,
     },
   };
 }
