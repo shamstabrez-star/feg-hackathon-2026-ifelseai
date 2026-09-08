@@ -419,13 +419,11 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         undefined,
         { results: action.results },
       );
+      // A search alone never becomes context: only an actual selection does.
       return {
         ...next,
         productQuery: action.query,
         productResults: action.results,
-        productMemory: action.topResult
-          ? { ...state.productMemory, [state.activeProduct]: `${label} · ${action.topResult}` }
-          : state.productMemory,
       };
     }
     case "productSelect": {
