@@ -15,7 +15,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const [typing, setTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { log, state, friction } = useSession();
+  const { log, state, friction, setSearchContext, intelligence, responsibleGate } = useSession();
   const recentInterest = Object.keys(state.interest);
 
   useEffect(() => {
@@ -37,7 +37,9 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [debounced],
   );
-  const results = intent.hits;
+  // SIMPLIFY tightens result density and keeps the closest matches on top.
+  const simplify = intelligence.decision === "SIMPLIFY" && responsibleGate.pass;
+  const results = simplify ? intent.hits.slice(0, 4) : intent.hits;
 
   useEffect(() => {
     if (debounced.trim().length >= 2) {
@@ -106,6 +108,9 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                 No matches found. Try a team, competition or player name.
               </p>
             ) : null}
+            {!typing && simplify && results.length ? (
+              <p className="pb-2 text-xs text-muted-foreground">Closest matches first</p>
+            ) : null}
             {!typing && intent.corrected && results.length ? (
               <p className="pb-2 text-xs text-muted-foreground">
                 Showing results for <span className="font-semibold text-foreground">{intent.corrected}</span>
@@ -121,6 +126,12 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                         log("navigation", `Opened ${match.home} - ${match.away}`, "from search", [
                           match.id,
                         ]);
+                        // Preserve search-to-match context for ordering.
+                        setSearchContext({
+                          query: debounced.trim(),
+                          ...(intent.corrected ? { corrected: intent.corrected } : {}),
+                          matchId: match.id,
+                        });
                         onClose();
                         navigate({ to: "/match/$matchId", params: { matchId: match.id } });
                       }}

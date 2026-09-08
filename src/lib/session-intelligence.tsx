@@ -90,6 +90,16 @@ type State = {
   betslipOpen: boolean;
   demoPath: DemoPath;
   interactions: number;
+  /** In-session continuity: last match opened and the ones already seen. */
+  lastViewedMatchId: string | null;
+  viewedMatches: string[];
+  /** Markets already unfolded per match, restored when the user comes back. */
+  marketTier: Record<string, 1 | 2 | 3>;
+  /** Preserved search-to-match context (sanitized query text only). */
+  searchContext: { query: string; corrected?: string; matchId?: string } | null;
+  /** Recent normalized queries, used to spot genuine reformulation loops. */
+  recentQueries: string[];
+  reformulations: number;
   /** Measured browser timings, filled from the Performance API. */
   perf: { firstSelectionMs: number | null; longTasks: number; navMs: number | null };
 };
@@ -111,7 +121,13 @@ type Action =
   | { type: "reset"; demoPath: DemoPath }
   | { type: "setTrace"; open: boolean }
   | { type: "setBetslip"; open: boolean }
-  | { type: "perf"; patch: Partial<State["perf"]> };
+  | { type: "perf"; patch: Partial<State["perf"]> }
+  | { type: "viewMatch"; matchId: string }
+  | { type: "setMarketTier"; matchId: string; tier: 1 | 2 | 3 }
+  | {
+      type: "searchContext";
+      context: { query: string; corrected?: string; matchId?: string } | null;
+    };
 
 function newSessionRef() {
   return `S-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -136,6 +152,12 @@ function makeInitial(demoPath: DemoPath = "none"): State {
     demoPath,
     interactions: 0,
     perf: { firstSelectionMs: null, longTasks: 0, navMs: null },
+    lastViewedMatchId: null,
+    viewedMatches: [],
+    marketTier: {},
+    searchContext: null,
+    recentQueries: [],
+    reformulations: 0,
   };
 }
 
@@ -181,10 +203,18 @@ function reducer(state: State, action: Action): State {
       );
       if (action.kind === "search") {
         const empty = Number(action.meta?.["results"] ?? 1) === 0;
+        const q = action.label.replace(/"/g, "").trim().toLowerCase();
+        const prev = state.recentQueries[0];
+        // Genuine reformulation: a different query typed right after another
+        // one, with no match opened in between.
+        const reformulated =
+          !!prev && prev !== q && !state.lastViewedMatchId && state.selections.length === 0;
         return {
           ...next,
           searches: next.searches + 1,
           emptySearches: next.emptySearches + (empty ? 1 : 0),
+          recentQueries: [q, ...state.recentQueries].slice(0, 6),
+          reformulations: next.reformulations + (reformulated ? 1 : 0),
         };
       }
       if (action.kind === "market_expand")
@@ -265,6 +295,22 @@ function reducer(state: State, action: Action): State {
       return { ...state, betslipOpen: action.open };
     case "perf":
       return { ...state, perf: { ...state.perf, ...action.patch } };
+    case "viewMatch":
+      return {
+        ...state,
+        lastViewedMatchId: action.matchId,
+        viewedMatches: [action.matchId, ...state.viewedMatches.filter((x) => x !== action.matchId)].slice(
+          0,
+          8,
+        ),
+        searchContext: state.searchContext
+          ? { ...state.searchContext, matchId: action.matchId }
+          : state.searchContext,
+      };
+    case "setMarketTier":
+      return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
+    case "searchContext":
+      return { ...state, searchContext: action.context };
     default:
       return state;
   }
@@ -278,7 +324,9 @@ function frictionScore(state: State) {
   const signals = state.frictionSignals.reduce((acc, s) => acc + s.weight, 0);
   const searchStrain = state.emptySearches * 8;
   const browseStrain = state.marketExpansions > 3 ? (state.marketExpansions - 3) * 4 : 0;
-  return Math.max(0, Math.min(100, signals + searchStrain + browseStrain));
+  // Repeated reformulation without opening a match is a candidate friction signal.
+  const loopStrain = state.reformulations >= 2 ? (state.reformulations - 1) * 9 : 0;
+  return Math.max(0, Math.min(100, signals + searchStrain + browseStrain + loopStrain));
 }
 
 function gateFor(stake: number, friction: number): { state: GateState; reason: string } {
@@ -294,7 +342,7 @@ function gateFor(stake: number, friction: number): { state: GateState; reason: s
 function decisionFor(state: State, gate: GateState, friction: number): { decision: Decision; why: string } {
   if (gate === "SILENCE") return { decision: "NONE", why: "Responsible gate suppressed interventions" };
   if (state.lastPlacement && state.selections.length === 0)
-    return { decision: "NONE", why: "Journey complete — no useful intervention" };
+    return { decision: "NONE", why: "User journey completed" };
   if (gate === "ADAPT" || friction >= 20 || state.emptySearches > 0)
     return { decision: "SIMPLIFY", why: "Friction signals suggest reducing choice" };
   if (state.selections.length > 0)
@@ -324,6 +372,11 @@ type Ctx = {
   place: () => Placement | null;
   setTrace: (open: boolean) => void;
   setBetslip: (open: boolean) => void;
+  viewMatch: (matchId: string) => void;
+  setMarketTier: (matchId: string, tier: 1 | 2 | 3) => void;
+  setSearchContext: (
+    context: { query: string; corrected?: string; matchId?: string } | null,
+  ) => void;
   resetSession: (path?: DemoPath) => void;
   runDemoPath: (path: Exclude<DemoPath, "none">) => void;
   totalOdds: number;
@@ -548,6 +601,9 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     place,
     setTrace: (open) => dispatch({ type: "setTrace", open }),
     setBetslip: (open) => dispatch({ type: "setBetslip", open }),
+    viewMatch: (matchId) => dispatch({ type: "viewMatch", matchId }),
+    setMarketTier: (matchId, tier) => dispatch({ type: "setMarketTier", matchId, tier }),
+    setSearchContext: (context) => dispatch({ type: "searchContext", context }),
     resetSession,
     runDemoPath,
     totalOdds,
