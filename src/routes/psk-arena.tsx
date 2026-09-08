@@ -20,7 +20,7 @@ function Page() {
   return (
     <AppShell>
       <PagePlaceholder
-        title="psk arena"
+        title="PSK Arena"
         note="This section of the PSK Intelligence prototype shell is ready for content."
       />
     </AppShell>
