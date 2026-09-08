@@ -150,8 +150,20 @@ export function IntelligenceTrace() {
         {state.traceOpen ? (
           <div className="max-h-[70vh] overflow-y-auto border-t border-border p-3 sm:max-h-[60vh]">
             <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
-              PSK Intelligence
+              Live session
             </p>
+            <p className="text-[10px] text-muted-foreground">Live prototype session signal</p>
+            {state.exited ? (
+              <div className="mt-2 rounded-sm border border-emerald-500/40 bg-surface-2 p-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Session
+                </p>
+                <p className="text-sm font-bold text-emerald-400">CLOSED</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Journey completed successfully — intelligence has stopped intervening.
+                </p>
+              </div>
+            ) : null}
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Stat label="Session" value={mounted ? intelligence.sessionRef : "—"} />
               <Stat

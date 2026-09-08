@@ -537,7 +537,7 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
   });
 
   const outcome = state.exited
-    ? "Session closed"
+    ? "Journey completed successfully"
     : state.lastPlacement
       ? "Bet accepted"
       : state.transactionStarted
