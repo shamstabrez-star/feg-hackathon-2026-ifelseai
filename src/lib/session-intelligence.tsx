@@ -295,8 +295,4 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
   return <SessionContext.Provider value={value}>{children}</SessionContext.Provider>;
 }
 
-export function useSession() {
-  const ctx = useContext(SessionContext);
-  if (!ctx) throw new Error("useSession must be used inside SessionIntelligenceProvider");
-  return ctx;
-}
+export { useSession } from "@/lib/session-context";
