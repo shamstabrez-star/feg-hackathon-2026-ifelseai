@@ -634,6 +634,12 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
   }
 
 
+  const productOutcome = !inSport
+    ? state.productQuery
+      ? `${product.label} content discovery`
+      : `${product.label} session active`
+    : null;
+
   const outcome = state.exited
     ? "Journey completed successfully"
     : state.lastPlacement
