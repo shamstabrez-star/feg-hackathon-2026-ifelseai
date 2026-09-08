@@ -69,6 +69,17 @@ function Page() {
   const shown = debounced ? results : casinoGames;
   const selected = state.productMemory.CASINO ?? null;
 
+  // Existing catalogue, grouped the way the Casino section already groups it.
+  const railGroups = useMemo(() => {
+    const map = new Map<string, typeof casinoGames>();
+    for (const game of casinoGames) {
+      const list = map.get(game.group) ?? [];
+      list.push(game);
+      map.set(game.group, list);
+    }
+    return [...map.entries()].map(([title, games]) => ({ title, games }));
+  }, []);
+
   return (
     <AppShell>
       <section className="rounded-md bg-surface p-4 sm:p-6">
