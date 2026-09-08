@@ -127,6 +127,14 @@ export type JourneyStage =
  */
 export type SessionContextModel = {
   sessionId: string;
+  /** Existing PSK product the customer is actually in (judge-facing label). */
+  activeProduct: string;
+  /** Product-scoped active context label — never steered by another product. */
+  activeContext: string;
+  /** Product the session was in before the current one. */
+  previousProduct: string | null;
+  /** Context held in that previous product, kept only as history. */
+  previousContext: string | null;
   journeyStage: JourneyStage;
   previousStage: JourneyStage | null;
   intent: string;

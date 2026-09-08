@@ -3,6 +3,7 @@ import { evaluateGate, type GateResult } from "./responsible-gate";
 import { COMPLETION_REASON, decideExperience, journeyStage } from "./experience-decision";
 import { contextConfidence, contextMatch, contextState } from "./context-engine";
 import { matchById } from "@/data/psk-data";
+import { PRODUCTS, type ProductKey } from "./product-context";
 import type {
   Decision,
   DemoPath,
@@ -90,6 +91,18 @@ export type SessionState = {
   targetDiscovered: boolean;
   /** Measured browser timings, filled from the Performance API. */
   perf: PerfState;
+  /** Existing PSK product the customer is currently in. */
+  activeProduct: ProductKey;
+  /** Product the session was in before this one. */
+  previousProduct: ProductKey | null;
+  /** Context label held in that previous product (history only). */
+  previousProductContext: string | null;
+  /** Last context reached inside each non-sport product, for continuity. */
+  productMemory: Partial<Record<ProductKey, string>>;
+  /** Live query inside the current non-sport product (sanitized text only). */
+  productQuery: string | null;
+  /** Result count for that query — measured, never invented. */
+  productResults: number | null;
 };
 
 export type SessionAction =
@@ -118,6 +131,9 @@ export type SessionAction =
   | { type: "betslipEngaged" }
   | { type: "beginTransaction" }
   | { type: "exit" }
+  | { type: "enterProduct"; product: ProductKey }
+  | { type: "productSearch"; query: string; results: number; topResult?: string | undefined }
+  | { type: "productSelect"; label: string }
   | { type: "stage"; stage: JourneyStage };
 
 function newSessionRef() {
@@ -171,6 +187,12 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     lobbyLoops: 0,
     progressSinceEvent: false,
     targetDiscovered: false,
+    activeProduct: "SPORT",
+    previousProduct: null,
+    previousProductContext: null,
+    productMemory: {},
+    productQuery: null,
+    productResults: null,
   };
 }
 
@@ -368,6 +390,50 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
             progressSinceEvent: false,
             targetDiscovered: false,
           };
+    case "enterProduct": {
+      if (state.activeProduct === action.product) return state;
+      const leaving = currentProductContextLabel(state);
+      const next = withEvent(
+        state,
+        "navigation",
+        `Product: ${PRODUCTS[action.product].label}`,
+        `Previous context: ${leaving}`,
+      );
+      return {
+        ...next,
+        activeProduct: action.product,
+        previousProduct: state.activeProduct,
+        previousProductContext: leaving,
+        // Context never crosses products: a new product starts with its own.
+        productQuery: null,
+        productResults: null,
+      };
+    }
+    case "productSearch": {
+      const label = PRODUCTS[state.activeProduct].label;
+      const next = withEvent(
+        state,
+        "search",
+        `"${action.query}"`,
+        `${label} · ${action.results} result(s)`,
+        undefined,
+        { results: action.results },
+      );
+      // A search alone never becomes context: only an actual selection does.
+      return {
+        ...next,
+        productQuery: action.query,
+        productResults: action.results,
+      };
+    }
+    case "productSelect": {
+      const label = PRODUCTS[state.activeProduct].label;
+      const next = withEvent(state, "navigation", `${label}: ${action.label}`);
+      return {
+        ...next,
+        productMemory: { ...state.productMemory, [state.activeProduct]: `${label} · ${action.label}` },
+      };
+    }
     case "stage":
       return state.previousStage === action.stage ? state : { ...state, previousStage: action.stage };
     case "perf":
@@ -441,6 +507,15 @@ export type DerivedSession = {
 function matchLabel(id: string) {
   const m = matchById(id);
   return m ? `${m.home} - ${m.away}` : null;
+}
+
+/** Context label currently held by the active product — product-scoped only. */
+export function currentProductContextLabel(state: SessionState): string {
+  if (state.activeProduct === "SPORT") {
+    const event = state.lastViewedMatchId ? matchLabel(state.lastViewedMatchId) : null;
+    return event ? `Football · ${event}` : PRODUCTS.SPORT.context;
+  }
+  return state.productMemory[state.activeProduct] ?? PRODUCTS[state.activeProduct].context;
 }
 
 export function totalOdds(state: SessionState) {
@@ -536,6 +611,44 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     activeSearchResults: (!!state.searchContext || !!state.intent) && state.intentResolved,
   });
 
+  /* Product isolation: outside Sports, the active product governs the context.
+     Sports context is kept only as previous context and never steers here. */
+  const product = PRODUCTS[state.activeProduct];
+  const inSport = state.activeProduct === "SPORT";
+  const productMemoryContext = inSport ? null : (state.productMemory[state.activeProduct] ?? null);
+  let productDecision: Decision = decision;
+  let productWhy = why;
+  if (!inSport) {
+    if (state.productQuery && (state.productResults ?? 0) > 0) {
+      productDecision = "DISCOVER";
+      productWhy = `${product.label} search intent detected → prioritised relevant existing content.`;
+    } else if (productMemoryContext) {
+      productDecision = "CONTINUE";
+      productWhy = `Active ${product.label.toLowerCase()} context → continue current journey.`;
+    } else {
+      productDecision = "NONE";
+      productWhy = "Normal exploration — no adaptation required.";
+    }
+  }
+
+  /* Outside Sports the response wording stays product-neutral. */
+  const productResponse = inSport
+    ? experienceResponse(productDecision)
+    : productDecision === "DISCOVER"
+      ? "Prioritise relevant existing content"
+      : productDecision === "CONTINUE"
+        ? "Continue current context"
+        : productDecision === "SIMPLIFY"
+          ? "Narrow the existing choice set"
+          : "No adaptation";
+
+
+  const productOutcome = !inSport
+    ? state.productQuery
+      ? `${product.label} content discovery`
+      : `${product.label} session active`
+    : null;
+
   const outcome = state.exited
     ? "Journey completed successfully"
     : state.lastPlacement
@@ -563,21 +676,29 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     friction,
     frictionLevel: frictionResult.level,
     frictionReason: frictionResult.reason,
-    experienceResponse: experienceResponse(decision),
+    experienceResponse: productResponse,
     gate,
-    decision,
-    decisionWhy: why,
+    decision: productDecision,
+    decisionWhy: productWhy,
     stage,
     context: {
       sessionId: state.sessionRef,
+      activeProduct: product.label,
+      activeContext: inSport
+        ? focus
+          ? `Football · ${focus.home} - ${focus.away}`
+          : PRODUCTS.SPORT.context
+        : (productMemoryContext ?? product.context),
+      previousProduct: state.previousProduct ? PRODUCTS[state.previousProduct].label : null,
+      previousContext: state.previousProductContext,
       journeyStage: stage,
       previousStage: state.previousStage,
-      intent: state.intent?.label ?? "Browse the offer",
-      intentConfidence: confidenceBand(confidence),
-      activeSport: focus ? "Football" : null,
-      activeEvent: focus ? `${focus.home} - ${focus.away}` : null,
-      activeCompetition: focus?.competition ?? null,
-      activeSearch: state.searchContext?.query ?? null,
+      intent: inSport ? (state.intent?.label ?? "Browse the offer") : product.intent,
+      intentConfidence: inSport ? confidenceBand(confidence) : state.productQuery ? "medium" : "none",
+      activeSport: inSport && focus ? "Football" : null,
+      activeEvent: inSport && focus ? `${focus.home} - ${focus.away}` : null,
+      activeCompetition: inSport ? (focus?.competition ?? null) : null,
+      activeSearch: inSport ? (state.searchContext?.query ?? null) : state.productQuery,
       lastViewedEvent: state.lastViewedMatchId ? matchLabel(state.lastViewedMatchId) : null,
       lastViewedMarket: state.lastViewedMarket,
       lastSelectedMarket: state.lastSelectedMarket,
@@ -593,11 +714,12 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
       }),
       frictionLevel: frictionResult.level,
       frictionReason: frictionResult.reason,
-      experienceResponse: experienceResponse(decision),
+      experienceResponse: productResponse,
       responsibleGate: gate.state,
-      experienceDecision: decision,
-      outcome,
-      reason: state.lastPlacement || state.exited ? COMPLETION_REASON : why,
+      experienceDecision: productDecision,
+      outcome: productOutcome ?? outcome,
+      reason:
+        inSport && (state.lastPlacement || state.exited) ? COMPLETION_REASON : productWhy,
     },
   };
 }

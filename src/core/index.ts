@@ -16,6 +16,7 @@
  */
 
 export * from "./types";
+export * from "./product-context";
 export * from "./session-state";
 export * from "./intent-engine";
 export * from "./search-intelligence";
