@@ -98,17 +98,47 @@ export function IntelligenceTrace() {
         ? "text-amber-400"
         : "text-red-400";
 
+  const completed = !!state.lastPlacement;
+  const focus = contextMatch({
+    interest: state.interest,
+    viewedMatches: state.viewedMatches,
+    lastViewedMatchId: state.lastViewedMatchId,
+    searchContext: state.searchContext,
+  });
+  const intent = state.searchContext
+    ? `Find ${state.searchContext.corrected ?? state.searchContext.query}`
+    : focus
+      ? `Follow ${focus.home} - ${focus.away}`
+      : "Browse the offer";
+  const context = focus
+    ? `${focus.competition} · ${focus.live ? "Live" : "Upcoming"}`
+    : "Football · Offer";
+  const frictionLabel =
+    intelligence.frictionScore >= 60 ? "High" : intelligence.frictionScore >= 30 ? "Elevated" : "Low";
+  const outcome = completed
+    ? "Bet accepted"
+    : state.selections.length
+      ? "Selection added"
+      : state.viewedMatches.length
+        ? "Match explored"
+        : "Session active";
+
   return (
-    <div className="pointer-events-none fixed bottom-3 left-3 z-40 w-[min(22rem,calc(100vw-1.5rem))]">
-      <div className="pointer-events-auto overflow-hidden rounded-md border border-border bg-popover/95 shadow-xl backdrop-blur">
+    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 sm:right-auto sm:bottom-3 sm:left-3 sm:w-[22rem]">
+      <div className="pointer-events-auto overflow-hidden rounded-t-xl border border-border bg-popover/95 shadow-xl backdrop-blur sm:rounded-md">
         <button
           onClick={() => setTrace(!state.traceOpen)}
           className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 text-left"
           aria-expanded={state.traceOpen}
         >
-          <Activity className="h-4 w-4 shrink-0 text-primary" />
+          <Activity className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <span className="min-w-0 truncate text-xs font-bold">
-            Intelligence trace{mounted ? ` · ${intelligence.sessionRef}` : ""}
+            ⌁ PSK Intelligence · Session active
+            {mounted ? (
+              <span className="ml-1 font-normal text-muted-foreground">
+                {intelligence.sessionRef}
+              </span>
+            ) : null}
           </span>
           <ChevronDown
             className={`h-4 w-4 shrink-0 transition-transform ${state.traceOpen ? "rotate-180" : ""}`}
@@ -116,16 +146,35 @@ export function IntelligenceTrace() {
         </button>
 
         {state.traceOpen ? (
-          <div className="max-h-[60vh] overflow-y-auto border-t border-border p-3">
-            <div className="grid grid-cols-2 gap-2">
-              <Stat label="Engagement" value={intelligence.engagement} />
-              <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
-              <Stat label="Decision" value={intelligence.decision} />
-              <Stat label="Friction score" value={`${intelligence.frictionScore}/100`} />
-            </div>
-            <p className="mt-2 text-[11px] text-muted-foreground">
-              Gate: {responsibleGate.reason}. Decision: {intelligence.decisionWhy}.
+          <div className="max-h-[70vh] overflow-y-auto border-t border-border p-3 sm:max-h-[60vh]">
+            <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+              PSK Intelligence
             </p>
+            <div className="mt-2 grid grid-cols-2 gap-2">
+              <Stat label="Session" value={mounted ? intelligence.sessionRef : "—"} />
+              <Stat label="Intent" value={intent} />
+              <Stat label="Context" value={context} />
+              <Stat label="Journey stage" value={intelligence.journeyStage} />
+              <Stat label="Friction" value={frictionLabel} />
+              <Stat label="Decision" value={intelligence.decision} />
+              <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
+              <Stat label="Outcome" value={outcome} />
+            </div>
+            {completed ? (
+              <div className="mt-2 rounded-sm bg-surface-2 p-2">
+                <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+                  Experience decision
+                </p>
+                <p className="text-sm font-bold">NONE</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Journey completed successfully. No additional intervention required.
+                </p>
+              </div>
+            ) : (
+              <p className="mt-2 text-[11px] text-muted-foreground">
+                Gate: {responsibleGate.reason}. Decision: {intelligence.decisionWhy}.
+              </p>
+            )}
             {cited ? (
               <div className="mt-2 rounded-sm bg-surface-2 p-2">
                 <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
