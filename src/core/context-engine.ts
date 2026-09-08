@@ -1,9 +1,13 @@
-import { matches as allMatches, type Market, type Match } from "@/data/psk-data";
+import { matches as allMatches, type Match } from "@/data/psk-data";
+import { relevanceScore } from "./relevance-engine";
+import type { SearchContext } from "./types";
 
 /**
- * Smart categorisation for the existing Sports offer.
- * Pure ordering/grouping of content that already exists — no new products,
- * no recommendation feed, no promotional content.
+ * Layer 4 — Context engine.
+ *
+ * Smart categorisation of the existing Sports offer: pure grouping and
+ * ordering of content that already exists. No new products, no
+ * recommendation feed, no promotional content.
  */
 
 export type ContextInput = {
@@ -11,7 +15,7 @@ export type ContextInput = {
   interest: Record<string, number>;
   viewedMatches: string[];
   lastViewedMatchId: string | null;
-  searchContext: { query: string; corrected?: string; matchId?: string } | null;
+  searchContext: SearchContext | null;
 };
 
 export type Group = {
@@ -22,27 +26,15 @@ export type Group = {
   matches: Match[];
 };
 
-function contextMatch(ctx: ContextInput): Match | undefined {
+/** The match the session is currently anchored on, from live context only. */
+export function contextMatch(ctx: ContextInput): Match | undefined {
   const id = ctx.searchContext?.matchId ?? ctx.lastViewedMatchId ?? ctx.viewedMatches[0];
   return id ? allMatches.find((m) => m.id === id) : undefined;
 }
 
-/** Transparent prototype relevance score, 0-100. No model, just session context. */
-export function relevanceScore(match: Match, ctx: ContextInput) {
-  let score = Math.min(30, Math.round(match.betCount / 20));
+function scoreFor(ctx: ContextInput) {
   const focus = contextMatch(ctx);
-  if (focus) {
-    if (focus.id === match.id) score += 60;
-    else if (focus.competition === match.competition) score += 25;
-    if (
-      focus.id !== match.id &&
-      [focus.home, focus.away].some((t) => t === match.home || t === match.away)
-    )
-      score += 20;
-  }
-  score += Math.min(20, (ctx.interest[match.id] ?? 0) * 8);
-  if (match.live) score += 6;
-  return Math.max(1, Math.min(100, score));
+  return (match: Match) => relevanceScore(match, { interest: ctx.interest, focus });
 }
 
 /**
@@ -51,6 +43,7 @@ export function relevanceScore(match: Match, ctx: ContextInput) {
  */
 export function categorise(ctx: ContextInput, source: Match[] = allMatches): Group[] {
   const focus = contextMatch(ctx);
+  const score = scoreFor(ctx);
   const used = new Set<string>();
   const groups: Group[] = [];
   const take = (list: Match[]) => list.filter((m) => !used.has(m.id));
@@ -70,7 +63,7 @@ export function categorise(ctx: ContextInput, source: Match[] = allMatches): Gro
     const sameCompetition = take(
       source
         .filter((m) => m.competition === focus.competition)
-        .sort((a, b) => relevanceScore(b, ctx) - relevanceScore(a, ctx)),
+        .sort((a, b) => score(b) - score(a)),
     );
     if (sameCompetition.length)
       groups.push({
@@ -84,11 +77,7 @@ export function categorise(ctx: ContextInput, source: Match[] = allMatches): Gro
   const live = take(source.filter((m) => m.live));
   if (live.length) groups.push({ id: "live", title: "Live now", matches: claim(live) });
 
-  const upcoming = take(
-    source
-      .filter((m) => !m.live)
-      .sort((a, b) => relevanceScore(b, ctx) - relevanceScore(a, ctx)),
-  );
+  const upcoming = take(source.filter((m) => !m.live).sort((a, b) => score(b) - score(a)));
   if (upcoming.length)
     groups.push({ id: "upcoming", title: "Upcoming matches", matches: claim(upcoming.slice(0, 4)) });
 
@@ -108,29 +97,4 @@ export function relatedMatches(match: Match, limit = 3) {
           [m.home, m.away].some((t) => t === match.home || t === match.away)),
     )
     .slice(0, limit);
-}
-
-/**
- * Orders existing markets for a match using live session context.
- * Complete market data is preserved — only the sequence changes.
- */
-export function orderMarkets(
-  markets: Market[],
-  opts: { query?: string | undefined; usedMarketNames?: string[] },
-): { market: Market; relevant: boolean }[] {
-  const q = (opts.query ?? "").toLowerCase();
-  const used = new Set(opts.usedMarketNames ?? []);
-  const scored = markets.map((market, index) => {
-    let score = 100 - index;
-    if (used.has(market.name)) score += 40;
-    if (q && market.id === "scorer" && /[a-z]{4,}/.test(q) && q.split(" ").length > 0) {
-      // A player-shaped query lifts the player market.
-      const players = market.outcomes.map((o) => o.label.toLowerCase()).join(" ");
-      if (q.split(" ").some((t) => t.length >= 4 && players.includes(t))) score += 60;
-    }
-    return { market, score, index };
-  });
-  scored.sort((a, b) => b.score - a.score || a.index - b.index);
-  const top = scored[0]?.score ?? 0;
-  return scored.map(({ market, score }) => ({ market, relevant: score > 100 && score === top }));
 }
