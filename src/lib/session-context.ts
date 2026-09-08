@@ -13,6 +13,7 @@ import type {
   JourneyStage,
   MarketTier,
   Placement,
+  ProductKey,
   SearchContext,
   SessionContextModel,
   SessionIntent,
@@ -48,6 +49,12 @@ export type Ctx = {
   beginTransaction: () => void;
   /** Done pressed after a completed journey — the session exits. */
   exitSession: () => void;
+  /** Records the existing PSK product the customer navigated into. */
+  enterProduct: (product: ProductKey) => void;
+  /** Records a real search inside the current non-sport product. */
+  productSearch: (query: string, results: number, topResult?: string) => void;
+  /** Records a real selection inside the current non-sport product. */
+  productSelect: (label: string) => void;
   /** Records a real browser measurement; never used for invented values. */
   measure: (patch: { searchMs?: number; interactionMs?: number }) => void;
   resetSession: (path?: DemoPath) => void;

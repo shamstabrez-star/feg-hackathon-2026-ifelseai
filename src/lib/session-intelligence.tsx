@@ -210,6 +210,10 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     setIntent: (intent, resolved) => dispatch({ type: "intent", intent, resolved }),
     beginTransaction: () => dispatch({ type: "beginTransaction" }),
     exitSession: () => dispatch({ type: "exit" }),
+    enterProduct: (product) => dispatch({ type: "enterProduct", product }),
+    productSearch: (query, results, topResult) =>
+      dispatch({ type: "productSearch", query, results, topResult }),
+    productSelect: (label) => dispatch({ type: "productSelect", label }),
     measure,
     resetSession,
     runDemoPath,
