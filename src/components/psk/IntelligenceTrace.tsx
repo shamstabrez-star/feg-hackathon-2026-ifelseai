@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Activity, ChevronDown } from "lucide-react";
 import { contextMatch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
+import { useRailMotion } from "@/lib/rail-motion";
 import {
   datasetEvidence,
   datasetsAvailable,
@@ -95,6 +96,8 @@ export function IntelligenceTrace() {
     runDemoPath,
     resetSession,
   } = useSession();
+
+  const railMotion = useRailMotion();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
