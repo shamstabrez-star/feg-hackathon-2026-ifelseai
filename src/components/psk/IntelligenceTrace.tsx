@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { Activity, ChevronDown } from "lucide-react";
+import { contextMatch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import {
   datasetEvidence,
