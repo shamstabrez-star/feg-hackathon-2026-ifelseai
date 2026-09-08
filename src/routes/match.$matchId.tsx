@@ -43,7 +43,9 @@ function MatchPage() {
   // In-session continuity: markets already unfolded for this match come back.
   const [tier, setTier] = useState<1 | 2 | 3>(state.marketTier[match.id] ?? 1);
   const dwell = useRef(Date.now());
-  const returning = state.viewedMatches.includes(match.id);
+  // Captured before this visit is recorded, so it only fires on a real return.
+  const returningRef = useRef(false);
+  const [returning, setReturning] = useState(false);
 
   useEffect(() => {
     log("navigation", `Viewing ${match.home} - ${match.away}`, match.competition, [match.id]);
