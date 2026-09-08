@@ -1,4 +1,7 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
+import { useRouterState } from "@tanstack/react-router";
+import { productFromPath } from "@/core";
+import { useSession } from "@/lib/session-intelligence";
 import { PskHeader, PskMobileSearch, PskSubNav } from "./PskHeader";
 import { PskSidebar } from "./PskSidebar";
 import { BetslipRail, BetslipSheet } from "./Betslip";
