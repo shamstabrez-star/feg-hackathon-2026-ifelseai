@@ -150,8 +150,20 @@ export function IntelligenceTrace() {
         {state.traceOpen ? (
           <div className="max-h-[70vh] overflow-y-auto border-t border-border p-3 sm:max-h-[60vh]">
             <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
-              PSK Intelligence
+              Live session
             </p>
+            <p className="text-[10px] text-muted-foreground">Live prototype session signal</p>
+            {state.exited ? (
+              <div className="mt-2 rounded-sm border border-emerald-500/40 bg-surface-2 p-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Session
+                </p>
+                <p className="text-sm font-bold text-emerald-400">CLOSED</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">
+                  Journey completed successfully — intelligence has stopped intervening.
+                </p>
+              </div>
+            ) : null}
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Stat label="Session" value={mounted ? intelligence.sessionRef : "—"} />
               <Stat
@@ -192,6 +204,10 @@ export function IntelligenceTrace() {
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Prototype responsible-control state. Responsible controls are evaluated independently
+              of optimisation decisions; this is not a production risk assessment.
+            </p>
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Why
@@ -277,7 +293,14 @@ export function IntelligenceTrace() {
             ) : null}
 
             <details className="mt-3 rounded-sm bg-surface-2/60 p-2">
-              <summary className="cursor-pointer text-[11px] font-bold">Evidence (judges)</summary>
+              <summary className="cursor-pointer text-[11px] font-bold">
+                Dataset evidence (judges)
+              </summary>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Prototype uses supplied challenge datasets for baseline evidence. Production
+                deployment would consume PSK event streams in real time. Dataset figures are fixed
+                and do not change as you click through this demo.
+              </p>
 
               <EvidenceList
                 title="Live session metrics"
@@ -330,9 +353,47 @@ export function IntelligenceTrace() {
               />
             </details>
 
+            <details className="mt-2 rounded-sm bg-surface-2/60 p-2">
+              <summary className="cursor-pointer text-[11px] font-bold">
+                Production architecture
+              </summary>
+              <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                Production target architecture — not connected in this prototype
+              </p>
+              <ol className="mt-1 space-y-0.5 text-[11px]">
+                {[
+                  ["PSK user events", "Web / app interaction events"],
+                  ["Event stream", "Kafka topics behind NGINX-fronted API services"],
+                  ["Session Engine", "Short-lived session state (Redis)"],
+                  ["Intent + Context + Friction", "Elasticsearch-backed entity resolution"],
+                  ["Responsible Gate", "Evaluated independently of optimisation"],
+                  ["Experience Decision", "NONE / CONTINUE / DISCOVER / SIMPLIFY"],
+                  ["Existing PSK experience", "Ordering and emphasis only, PostgreSQL of record"],
+                ].map(([stage, detail], i, arr) => (
+                  <li key={stage} className="break-words">
+                    <span className="font-semibold">{stage}</span>
+                    <span className="block text-[10px] text-muted-foreground">{detail}</span>
+                    {i < arr.length - 1 ? (
+                      <span aria-hidden="true" className="block text-muted-foreground">
+                        ↓
+                      </span>
+                    ) : null}
+                  </li>
+                ))}
+              </ol>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Kafka, NGINX, Redis, PostgreSQL and Elasticsearch are named as the target FEG
+                deployment path. None of these production integrations are currently connected —
+                this prototype runs entirely in the browser session.
+              </p>
+            </details>
+
             <div className="mt-3">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Session events
+                Session events <span className="normal-case">(this prototype interaction)</span>
+              </p>
+              <p className="text-[10px] text-muted-foreground">
+                Generated by your actions just now; timings are measured from session start.
               </p>
               <ul className="mt-1 space-y-1">
                 {state.events.slice(0, 12).map((e) => (
