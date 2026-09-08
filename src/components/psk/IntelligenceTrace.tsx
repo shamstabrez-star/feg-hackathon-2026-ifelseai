@@ -186,7 +186,18 @@ export function IntelligenceTrace() {
                   />
                 </>
               ) : null}
-              <Stat label="Context" value={context} />
+              <Stat label="Active product" value={sessionContext.activeProduct} />
+              <Stat label="Active intent" value={sessionContext.intent} />
+              <Stat label="Active context" value={sessionContext.activeContext} />
+              <Stat
+                label="Previous context"
+                value={
+                  sessionContext.previousContext
+                    ? `${sessionContext.previousProduct ?? "—"} · ${sessionContext.previousContext}`
+                    : "—"
+                }
+              />
+              <Stat label="Sport context" value={context} />
               <Stat label="Active event" value={sessionContext.activeEvent ?? "—"} />
               {sessionContext.previousEvent ? (
                 <Stat label="Previous event" value={sessionContext.previousEvent} />
