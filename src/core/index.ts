@@ -18,6 +18,7 @@
 export * from "./types";
 export * from "./session-state";
 export * from "./intent-engine";
+export * from "./search-intelligence";
 export * from "./context-engine";
 export * from "./relevance-engine";
 export * from "./friction-engine";

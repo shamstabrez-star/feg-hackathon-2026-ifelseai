@@ -58,11 +58,14 @@ function useRecommendRail() {
   if (!focus) return { title: "We recommend", items: staticRecommended };
 
   const strong = (state.interest[focus.id] ?? 0) >= 2 || state.selections.length > 0;
-  const title = state.searchContext
-    ? "Related to your search"
-    : strong
+  const title = state.lastViewedMatchId
+    ? strong
       ? "Relevant to you"
-      : "Continue where you left off";
+      : "Continue where you left off"
+    : state.searchContext
+      ? "Related to your search"
+      : "We recommend";
+
 
   const around = [focus, ...relatedMatches(focus, 2)];
   const rest = matches.filter((m) => !around.some((a) => a.id === m.id)).slice(0, 2);
