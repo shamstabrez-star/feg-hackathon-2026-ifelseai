@@ -53,7 +53,15 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
   const [done, setDone] = useState<Placement | null>(null);
 
   if (done) {
-    return <Confirmation placement={done} onDone={() => setDone(null)} />;
+    return (
+      <Confirmation
+        placement={done}
+        onDone={() => {
+          setDone(null);
+          onClose?.();
+        }}
+      />
+    );
   }
 
   if (state.selections.length === 0) {
