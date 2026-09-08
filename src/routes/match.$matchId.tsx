@@ -43,8 +43,7 @@ function MatchPage() {
   // In-session continuity: markets already unfolded for this match come back.
   const [tier, setTier] = useState<1 | 2 | 3>(state.marketTier[match.id] ?? 1);
   const dwell = useRef(Date.now());
-  // Captured before this visit is recorded, so it only fires on a real return.
-  const returningRef = useRef(false);
+  // Only true when this match was already opened earlier in the session.
   const [returning, setReturning] = useState(false);
 
   useEffect(() => {
