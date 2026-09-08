@@ -187,7 +187,7 @@ export function IntelligenceTrace() {
                 label="Intent"
                 value={`${sessionContext.intent} · ${sessionContext.intentConfidence}`}
               />
-              {state.intent?.query ? (
+              {sessionContext.activeProduct === "Sport" && state.intent?.query ? (
                 <>
                   <Stat label="Query" value={`"${state.intent.query}"`} />
                   <Stat
@@ -195,6 +195,9 @@ export function IntelligenceTrace() {
                     value={`${state.intent.normalisedQuery ?? "—"} · ${state.intent.intentType ?? "UNKNOWN"}`}
                   />
                 </>
+              ) : null}
+              {sessionContext.activeProduct !== "Sport" && sessionContext.activeSearch ? (
+                <Stat label="Query" value={`"${sessionContext.activeSearch}"`} />
               ) : null}
               <Stat label="Active product" value={sessionContext.activeProduct} />
               <Stat label="Active intent" value={sessionContext.intent} />
@@ -208,9 +211,11 @@ export function IntelligenceTrace() {
                 }
               />
               {sessionContext.activeProduct === "Sport" ? (
-                <Stat label="Sport context" value={context} />
+                <>
+                  <Stat label="Sport context" value={context} />
+                  <Stat label="Active event" value={sessionContext.activeEvent ?? "—"} />
+                </>
               ) : null}
-              <Stat label="Active event" value={sessionContext.activeEvent ?? "—"} />
               {sessionContext.previousEvent ? (
                 <Stat label="Previous event" value={sessionContext.previousEvent} />
               ) : null}
