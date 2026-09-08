@@ -1,71 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { matches, type Match } from "@/data/psk-data";
+import { inferIntent } from "@/lib/intent";
 import { useSession } from "@/lib/session-intelligence";
 
-type Result = { match: Match; reason: string; score: number };
-
-/** Small Levenshtein distance, used for typo-tolerant team queries. */
-function editDistance(a: string, b: string) {
-  if (Math.abs(a.length - b.length) > 3) return 99;
-  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
-  for (let i = 1; i <= a.length; i++) {
-    let last = prev[0]!;
-    prev[0] = i;
-    for (let j = 1; j <= b.length; j++) {
-      const tmp = prev[j]!;
-      prev[j] = Math.min(prev[j]! + 1, prev[j - 1]! + 1, last + (a[i - 1] === b[j - 1] ? 0 : 1));
-      last = tmp;
-    }
-  }
-  return prev[b.length]!;
-}
-
-function normalize(value: string) {
-  return value
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
-/** Tolerant matching: partials, variations, team, competition and player queries. */
-export function searchMatches(query: string): Result[] {
-  const q = normalize(query.trim());
-  if (q.length < 2) return [];
-  const tokens = q.split(/\s+/).filter(Boolean);
-
-  const hit = (haystack: string) => {
-    const h = normalize(haystack);
-    return tokens.every((t) => h.includes(t) || h.split(/\s+/).some((w) => w.startsWith(t)));
-  };
-
-  const results: Result[] = [];
-  for (const match of matches) {
-    const team = `${match.home} ${match.away}`;
-    if (hit(team)) {
-      results.push({ match, reason: "Team match", score: 3 });
-      continue;
-    }
-    if (hit(match.competition) || hit(match.competitionShort)) {
-      results.push({ match, reason: `Competition · ${match.competition}`, score: 2 });
-      continue;
-    }
-    const player = match.players.find((p) => hit(p));
-    if (player) {
-      results.push({ match, reason: `Player · ${player}`, score: 2 });
-      continue;
-    }
-    // Variation / typo tolerance: prefix or small edit distance against any word.
-    const words = normalize(`${team} ${match.competition} ${match.players.join(" ")}`).split(/\s+/);
-    const loose = tokens.some((t) =>
-      words.some(
-        (w) => w.startsWith(t.slice(0, Math.max(3, t.length - 1))) || editDistance(w, t) <= 2,
-      ),
-    );
-    if (loose) results.push({ match, reason: "Close match", score: 1 });
-  }
-  return results.sort((a, b) => b.score - a.score).slice(0, 8);
+/** Kept for compatibility: tolerant match lookup used elsewhere. */
+export function searchMatches(query: string) {
+  return inferIntent(query).hits;
 }
 
 export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () => void }) {
