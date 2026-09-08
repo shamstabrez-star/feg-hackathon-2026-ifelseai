@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { inferIntent } from "@/core";
+import { inferIntent, intentLabel, interpretSearch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
 
@@ -41,10 +41,13 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     setSearchContext,
     setIntent,
     intelligence,
+    sessionContext,
     responsibleGate,
     measure,
   } = useSession();
   const recentInterest = Object.keys(state.interest);
+  const activeSport = sessionContext.activeSport;
+  const activeCompetition = sessionContext.activeCompetition;
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
@@ -67,14 +70,39 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     return () => clearTimeout(t);
   }, [query]);
 
-  const intent = useMemo(
-    () => inferIntent(debounced, recentInterest),
+  const result = useMemo(
+    () =>
+      interpretSearch(debounced, {
+        activeSport,
+        activeCompetition,
+        recentInterest,
+      }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [debounced],
+    [debounced, activeSport, activeCompetition],
   );
+
   // SIMPLIFY tightens result density and keeps the closest matches on top.
   const simplify = intelligence.decision === "SIMPLIFY" && responsibleGate.pass;
-  const results = simplify ? intent.hits.slice(0, 4) : intent.hits;
+  const groups = useMemo(() => {
+    if (!simplify) return result.groups;
+    let budget = 5;
+    const out: typeof result.groups = [];
+    for (const g of result.groups) {
+      if (budget <= 0) break;
+      const entries = g.entries.slice(0, budget);
+      budget -= entries.length;
+      out.push({ ...g, entries });
+    }
+    return out;
+  }, [result.groups, simplify]);
+
+  // Flat, keyboard-navigable order across the natural groups.
+  const flat = useMemo(() => groups.flatMap((g) => g.entries), [groups]);
+  const corrected =
+    result.intent.source === "variation" &&
+    result.intent.normalisedQuery.toLowerCase() !== debounced.trim().toLowerCase()
+      ? result.intent.normalisedQuery
+      : null;
 
   useEffect(() => {
     if (debounced.trim().length >= 2) {
@@ -84,21 +112,28 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
       log(
         "search",
         `"${debounced.trim()}"`,
-        `${results.length} result(s) · intent ${intent.intent} · confidence ${intent.confidence.toFixed(2)}`,
+        `${flat.length} result(s) · ${result.intent.intentType} · confidence ${result.intent.confidence.toFixed(2)}`,
         ["search"],
-        { results: results.length, confidence: intent.confidence },
+        { results: flat.length, confidence: result.intent.confidence },
       );
-      // Resolved intent — plain label only, never personal data.
+      // Resolved intent — plain label plus interpretation, never personal data.
       setIntent(
         {
-          label: intent.corrected
-            ? `Find ${intent.corrected}`
-            : `Find ${debounced.trim()}`,
-          confidence: intent.confidence,
+          label: intentLabel(result.intent),
+          confidence: result.intent.confidence,
+          query: result.intent.query,
+          normalisedQuery: result.intent.normalisedQuery,
+          intentType: result.intent.intentType,
+          entityType: result.intent.entityType,
+          ...(result.intent.entityId ? { entityId: result.intent.entityId } : {}),
+          source: result.intent.source,
         },
-        results.length > 0,
+        flat.length > 0,
       );
-      if (results.length === 0) friction("Search returned no results (prototype signal)", 12);
+      if (flat.length === 0) friction("Search returned no results (prototype signal)", 12);
+    } else if (debounced.trim().length === 0) {
+      // Cleared search — intent returns to unknown rather than lingering.
+      setIntent(null, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced]);
@@ -106,30 +141,34 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const openMatch = useCallback(
     (matchId: string, label: string) => {
       log("navigation", `Opened ${label}`, "from search", [matchId]);
-      // Preserve search-to-match context for ordering.
+      // Preserve search-to-match context for ordering and match-page context.
       setSearchContext({
-        query: debounced.trim(),
-        ...(intent.corrected ? { corrected: intent.corrected } : {}),
+        query: result.intent.normalisedQuery || debounced.trim(),
+        ...(corrected ? { corrected } : {}),
         matchId,
       });
       onClose();
       navigate({ to: "/match/$matchId", params: { matchId } });
     },
-    [debounced, intent.corrected, log, navigate, onClose, setSearchContext],
+    [corrected, debounced, log, navigate, onClose, result.intent.normalisedQuery, setSearchContext],
   );
 
   if (!open) return null;
 
   const showSkeleton = typing && query.trim().length >= 2;
-  const showEmpty = !typing && debounced.trim().length >= 2 && results.length === 0;
+  const showEmpty = !typing && debounced.trim().length >= 2 && flat.length === 0;
+  // A single obvious result stays simple — no group headings.
+  const showHeadings = groups.length > 1 && flat.length > 2;
 
   const status = showSkeleton
     ? "Searching"
     : showEmpty
-      ? "No matches found"
-      : results.length
-        ? `${results.length} result${results.length === 1 ? "" : "s"}`
+      ? "No matching results"
+      : flat.length
+        ? `${flat.length} result${flat.length === 1 ? "" : "s"}`
         : "";
+
+  let cursor = -1;
 
   return (
     <div
@@ -149,17 +188,17 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
             onClose();
             return;
           }
-          if (!results.length) return;
+          if (!flat.length) return;
           if (e.key === "ArrowDown") {
             e.preventDefault();
-            setActive((i) => (i + 1) % results.length);
+            setActive((i) => (i + 1) % flat.length);
           } else if (e.key === "ArrowUp") {
             e.preventDefault();
-            setActive((i) => (i - 1 + results.length) % results.length);
+            setActive((i) => (i - 1 + flat.length) % flat.length);
           } else if (e.key === "Enter" && e.target === inputRef.current) {
             e.preventDefault();
-            const hit = results[active];
-            if (hit) openMatch(hit.match.id, `${hit.match.home} - ${hit.match.away}`);
+            const hit = flat[active];
+            if (hit) openMatch(hit.matchId, hit.primary);
           }
         }}
       >
@@ -212,46 +251,64 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
           <div className="mt-4 max-h-[50vh] overflow-y-auto">
             {showSkeleton ? <ResultSkeleton /> : null}
             {showEmpty ? (
-              <p className="py-6 text-center text-sm text-muted-foreground">
-                No matches found. Try a team, competition or player name.
-              </p>
+              <div className="py-6 text-center">
+                <p className="text-sm font-semibold">No matching results</p>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Try a team, competition or player name.
+                </p>
+              </div>
             ) : null}
-            {!typing && simplify && results.length ? (
+            {!typing && simplify && flat.length ? (
               <p className="pb-2 text-xs text-muted-foreground">Closest matches first</p>
             ) : null}
-            {!typing && intent.corrected && results.length ? (
+            {!typing && corrected && flat.length ? (
               <p className="pb-2 text-xs text-muted-foreground">
                 Showing results for{" "}
-                <span className="font-semibold text-foreground">{intent.corrected}</span>
+                <span className="font-semibold text-foreground">{corrected}</span>
               </p>
             ) : null}
-            <ul>
-              {!typing &&
-                results.map(({ match, reason }, index) => (
-                  <li key={match.id}>
-                    <button
-                      className={cn(
-                        "grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-2 py-3 text-left transition-colors hover:bg-surface-2",
-                        index === active && "bg-surface-2",
-                      )}
-                      onMouseEnter={() => setActive(index)}
-                      onClick={() => openMatch(match.id, `${match.home} - ${match.away}`)}
-                    >
-                      <span className="min-w-0">
-                        <span className="block truncate text-sm font-semibold">
-                          {match.home} - {match.away}
-                        </span>
-                        <span className="block truncate text-xs text-muted-foreground">
-                          {reason} · {match.kickoff}
-                        </span>
-                      </span>
-                      <span className="shrink-0 rounded-sm bg-surface-2 px-2 py-1 text-[11px] text-muted-foreground">
-                        {match.live ? "LIVE" : match.competitionShort}
-                      </span>
-                    </button>
-                  </li>
-                ))}
-            </ul>
+
+            {!typing
+              ? groups.map((group) => (
+                  <section key={group.id} className="mb-1">
+                    {showHeadings ? (
+                      <h3 className="px-2 pt-2 pb-1 text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+                        {group.title}
+                      </h3>
+                    ) : null}
+                    <ul>
+                      {group.entries.map((entry) => {
+                        cursor += 1;
+                        const index = cursor;
+                        return (
+                          <li key={`${group.id}-${entry.key}`}>
+                            <button
+                              className={cn(
+                                "grid min-h-12 w-full grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-border px-2 py-3 text-left transition-colors hover:bg-surface-2",
+                                index === active && "bg-surface-2",
+                              )}
+                              onMouseEnter={() => setActive(index)}
+                              onClick={() => openMatch(entry.matchId, entry.primary)}
+                            >
+                              <span className="min-w-0">
+                                <span className="block truncate text-sm font-semibold">
+                                  {entry.primary}
+                                </span>
+                                <span className="block truncate text-xs text-muted-foreground">
+                                  {entry.secondary}
+                                </span>
+                              </span>
+                              <span className="shrink-0 rounded-sm bg-surface-2 px-2 py-1 text-[11px] text-muted-foreground">
+                                {entry.badge}
+                              </span>
+                            </button>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))
+              : null}
           </div>
         </div>
       </div>

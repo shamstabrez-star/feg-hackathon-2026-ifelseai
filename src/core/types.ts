@@ -71,7 +71,18 @@ export type SessionIntent = {
   label: string;
   /** Prototype confidence, 0-1, from the transparent intent scoring. */
   confidence: number;
+  /** Raw query the customer typed. */
+  query?: string;
+  /** Entity the query most plausibly refers to (e.g. "Real Madrid"). */
+  normalisedQuery?: string;
+  /** UNKNOWN | SPORT | TEAM | COMPETITION | EVENT | PLAYER | GENERAL_SEARCH */
+  intentType?: string;
+  entityType?: string | null;
+  entityId?: string;
+  /** exact | partial | variation | context | none */
+  source?: string;
 };
+
 
 export type IntentConfidence = "none" | "low" | "medium" | "high";
 

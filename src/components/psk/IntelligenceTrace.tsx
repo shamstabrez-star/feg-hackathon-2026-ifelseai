@@ -156,8 +156,18 @@ export function IntelligenceTrace() {
                 label="Intent"
                 value={`${sessionContext.intent} · ${sessionContext.intentConfidence}`}
               />
+              {state.intent?.query ? (
+                <>
+                  <Stat label="Query" value={`"${state.intent.query}"`} />
+                  <Stat
+                    label="Interpretation"
+                    value={`${state.intent.normalisedQuery ?? "—"} · ${state.intent.intentType ?? "UNKNOWN"}`}
+                  />
+                </>
+              ) : null}
               <Stat label="Context" value={context} />
               <Stat label="Journey" value={journey} />
+
               <Stat label="Friction" value={sessionContext.frictionLevel} />
               <Stat label="Decision" value={intelligence.decision} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
