@@ -372,8 +372,8 @@ export function IntelligenceTrace() {
               </p>
               <ol className="mt-1 space-y-0.5 text-[11px]">
                 {[
-                  ["PSK user events", "Web / app interaction events"],
-                  ["Event stream", "Kafka topics behind NGINX-fronted API services"],
+                  ["PSK interaction events", "Web / app interaction events"],
+                  ["Kafka / event stream", "Kafka topics behind NGINX-fronted API services"],
                   ["Session Engine", "Short-lived session state (Redis)"],
                   ["Intent + Context + Friction", "Elasticsearch-backed entity resolution"],
                   ["Responsible Gate", "Evaluated independently of optimisation"],
