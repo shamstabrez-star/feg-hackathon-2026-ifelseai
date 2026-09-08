@@ -391,10 +391,24 @@ export function IntelligenceTrace() {
                   </li>
                 ))}
               </ol>
+              <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                <li>
+                  <span className="font-semibold">Frontend:</span> Vue.js
+                </li>
+                <li>
+                  <span className="font-semibold">Services:</span> Java / Python / .NET
+                </li>
+                <li>
+                  <span className="font-semibold">Integration:</span> NGINX / Kafka / RabbitMQ
+                </li>
+                <li>
+                  <span className="font-semibold">Data:</span> PostgreSQL / Redis / MongoDB /
+                  Elasticsearch
+                </li>
+              </ul>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Kafka, NGINX, Redis, PostgreSQL and Elasticsearch are named as the target FEG
-                deployment path. None of these production integrations are currently connected —
-                this prototype runs entirely in the browser session.
+                Prototype implementation is simplified; production integration would connect these
+                intelligence services to the PSK event architecture.
               </p>
             </details>
 
