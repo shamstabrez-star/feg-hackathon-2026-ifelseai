@@ -187,6 +187,12 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     lobbyLoops: 0,
     progressSinceEvent: false,
     targetDiscovered: false,
+    activeProduct: "SPORT",
+    previousProduct: null,
+    previousProductContext: null,
+    productMemory: {},
+    productQuery: null,
+    productResults: null,
   };
 }
 
