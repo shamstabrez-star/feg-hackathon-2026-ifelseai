@@ -19,6 +19,7 @@ import { Route as PromoRouteImport } from './routes/promo'
 import { Route as PskArenaRouteImport } from './routes/psk-arena'
 import { Route as SwipeAndBetRouteImport } from './routes/swipe-and-bet'
 import { Route as VirtualsRouteImport } from './routes/virtuals'
+import { Route as MatchMatchIdRouteImport } from './routes/match.$matchId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -70,6 +71,11 @@ const VirtualsRoute = VirtualsRouteImport.update({
   path: '/virtuals',
   getParentRoute: () => rootRouteImport,
 } as any)
+const MatchMatchIdRoute = MatchMatchIdRouteImport.update({
+  id: '/match/$matchId',
+  path: '/match/$matchId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/psk-arena': typeof PskArenaRoute
   '/swipe-and-bet': typeof SwipeAndBetRoute
   '/virtuals': typeof VirtualsRoute
+  '/match/$matchId': typeof MatchMatchIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -94,6 +101,7 @@ export interface FileRoutesByTo {
   '/psk-arena': typeof PskArenaRoute
   '/swipe-and-bet': typeof SwipeAndBetRoute
   '/virtuals': typeof VirtualsRoute
+  '/match/$matchId': typeof MatchMatchIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -107,6 +115,7 @@ export interface FileRoutesById {
   '/psk-arena': typeof PskArenaRoute
   '/swipe-and-bet': typeof SwipeAndBetRoute
   '/virtuals': typeof VirtualsRoute
+  '/match/$matchId': typeof MatchMatchIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -121,6 +130,7 @@ export interface FileRouteTypes {
     | '/psk-arena'
     | '/swipe-and-bet'
     | '/virtuals'
+    | '/match/$matchId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -133,6 +143,7 @@ export interface FileRouteTypes {
     | '/psk-arena'
     | '/swipe-and-bet'
     | '/virtuals'
+    | '/match/$matchId'
   id:
     | '__root__'
     | '/'
@@ -145,6 +156,7 @@ export interface FileRouteTypes {
     | '/psk-arena'
     | '/swipe-and-bet'
     | '/virtuals'
+    | '/match/$matchId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -158,6 +170,7 @@ export interface RootRouteChildren {
   PskArenaRoute: typeof PskArenaRoute
   SwipeAndBetRoute: typeof SwipeAndBetRoute
   VirtualsRoute: typeof VirtualsRoute
+  MatchMatchIdRoute: typeof MatchMatchIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -232,6 +245,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof VirtualsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/match/$matchId': {
+      id: '/match/$matchId'
+      path: '/match/$matchId'
+      fullPath: '/match/$matchId'
+      preLoaderRoute: typeof MatchMatchIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -246,6 +266,7 @@ const rootRouteChildren: RootRouteChildren = {
   PskArenaRoute: PskArenaRoute,
   SwipeAndBetRoute: SwipeAndBetRoute,
   VirtualsRoute: VirtualsRoute,
+  MatchMatchIdRoute: MatchMatchIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
