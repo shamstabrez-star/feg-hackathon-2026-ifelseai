@@ -33,6 +33,8 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const [active, setActive] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
   const searchStart = useRef<number | null>(null);
+  /** True once the customer typed a real query in this open session. */
+  const hadQuery = useRef(false);
   const navigate = useNavigate();
   const {
     log,
@@ -50,8 +52,11 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const activeCompetition = sessionContext.activeCompetition;
 
   useEffect(() => {
-    if (open) inputRef.current?.focus();
-    else {
+    if (open) {
+      inputRef.current?.focus();
+      hadQuery.current = false;
+    }
+    if (!open) {
       setQuery("");
       setDebounced("");
       setActive(0);
@@ -106,6 +111,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
 
   useEffect(() => {
     if (debounced.trim().length >= 2) {
+      hadQuery.current = true;
       if (searchStart.current !== null) {
         measure({ searchMs: Math.round(performance.now() - searchStart.current) });
       }
@@ -131,7 +137,7 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
         flat.length > 0,
       );
       if (flat.length === 0) friction("Search returned no results (prototype signal)", 12);
-    } else if (open && debounced.trim().length === 0) {
+    } else if (open && hadQuery.current && debounced.trim().length === 0) {
       // Cleared search — intent returns to unknown rather than lingering.
       setIntent(null, false);
     }
