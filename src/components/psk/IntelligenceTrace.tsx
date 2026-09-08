@@ -238,6 +238,7 @@ export function IntelligenceTrace() {
               <Stat label="Decision" value={intelligence.decision} />
               <Stat label="Response" value={sessionContext.experienceResponse} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
+              <Stat label="Content motion" value={railMotion.reason} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
