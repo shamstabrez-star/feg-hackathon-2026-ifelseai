@@ -86,8 +86,8 @@ export function evaluateFriction(input: FrictionInput): FrictionResult {
 
   // HIGH needs combined repeated evidence, never one category alone and never
   // time or click count.
-  const categories = [emptyStrain, loopStrain, navStrain].filter((v) => v > 0).length;
-  const strongEvidence = seeded >= 50 || (categories >= 2 && raw >= 50);
+  const searchStrain = emptyStrain + loopStrain;
+  const strongEvidence = seeded >= 50 || (navStrain > 0 && searchStrain > 0 && raw >= 50);
   const score = Math.max(0, Math.min(strongEvidence ? 100 : 49, raw));
   const level = band(score);
 
