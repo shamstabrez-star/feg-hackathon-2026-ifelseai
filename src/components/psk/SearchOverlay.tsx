@@ -6,6 +6,22 @@ import { useSession } from "@/lib/session-intelligence";
 
 type Result = { match: Match; reason: string; score: number };
 
+/** Small Levenshtein distance, used for typo-tolerant team queries. */
+function editDistance(a: string, b: string) {
+  if (Math.abs(a.length - b.length) > 3) return 99;
+  const prev = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let last = prev[0]!;
+    prev[0] = i;
+    for (let j = 1; j <= b.length; j++) {
+      const tmp = prev[j]!;
+      prev[j] = Math.min(prev[j]! + 1, prev[j - 1]! + 1, last + (a[i - 1] === b[j - 1] ? 0 : 1));
+      last = tmp;
+    }
+  }
+  return prev[b.length]!;
+}
+
 function normalize(value: string) {
   return value
     .toLowerCase()
