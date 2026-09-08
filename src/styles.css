@@ -103,4 +103,40 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
   }
+
+  /* Visible keyboard focus everywhere, without adding mouse focus rings. */
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+}
+
+/* Brief, purposeful loading placeholder. */
+@utility skeleton {
+  background-color: var(--color-surface-2);
+  border-radius: var(--radius-sm);
+  animation: psk-pulse 1.2s ease-in-out infinite;
+}
+
+@keyframes psk-pulse {
+  0%,
+  100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.9;
+  }
+}
+
+/* Respect reduced-motion: keep state changes instant, never remove feedback. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
