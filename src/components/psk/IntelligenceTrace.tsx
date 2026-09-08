@@ -204,6 +204,10 @@ export function IntelligenceTrace() {
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
+            <p className="mt-1 text-[10px] text-muted-foreground">
+              Prototype responsible-control state. Responsible controls are evaluated independently
+              of optimisation decisions; this is not a production risk assessment.
+            </p>
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Why
