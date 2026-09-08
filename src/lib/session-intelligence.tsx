@@ -1,15 +1,12 @@
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useReducer,
   useRef,
   type ReactNode,
 } from "react";
-import type { Match, Market, Outcome } from "@/data/psk-data";
-import type { EvidenceItem } from "@/data/evidence";
+import { SessionContext, type Ctx } from "@/lib/session-context";
 import {
   buildPlacement,
   businessMetrics as buildBusinessMetrics,
