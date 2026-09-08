@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import { SessionContext, type Ctx } from "@/lib/session-context";
+import type { Match, Market, Outcome } from "@/data/psk-data";
 import {
   buildPlacement,
   businessMetrics as buildBusinessMetrics,
