@@ -49,6 +49,8 @@ function MatchPage() {
 
   useEffect(() => {
     log("navigation", `Viewing ${match.home} - ${match.away}`, match.competition, [match.id]);
+    setReturning(returningRef.current || state.viewedMatches.includes(match.id));
+    returningRef.current = true;
     viewMatch(match.id);
     setTier(state.marketTier[match.id] ?? 1);
     dwell.current = Date.now();
