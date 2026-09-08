@@ -525,7 +525,9 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     intentConfidence: confidence,
     hasContext: !!focus,
     returning: !!focus && state.contextRestored && !state.contextSwitched,
-    activeSearchResults: !!state.searchContext && state.intentResolved,
+    // A live query with usable results counts, even before the customer has
+    // opened one of them.
+    activeSearchResults: (!!state.searchContext || !!state.intent) && state.intentResolved,
   });
 
   const outcome = state.exited
