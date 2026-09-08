@@ -4,6 +4,7 @@ import { useSession, type Placement } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
 
 function Confirmation({ placement, onDone }: { placement: Placement; onDone: () => void }) {
+  const [ticketOpen, setTicketOpen] = useState(false);
   return (
     <div className="p-4 text-center" role="status" aria-live="polite">
       <CheckCircle2 className="mx-auto h-12 w-12 text-live" strokeWidth={1.5} aria-hidden="true" />
@@ -27,11 +28,29 @@ function Confirmation({ placement, onDone }: { placement: Placement; onDone: () 
         <span className="text-muted-foreground">Potential return</span>
         <span className="text-right font-semibold">{placement.potentialReturn.toFixed(2)} €</span>
       </div>
+      {ticketOpen ? (
+        <div className="mt-4 rounded-md bg-surface-2 p-3 text-left text-xs text-muted-foreground">
+          <p className="font-bold text-foreground">Ticket {placement.ref}</p>
+          <p className="mt-1">
+            {placement.selections.length} selection
+            {placement.selections.length === 1 ? "" : "s"} · stake {placement.stake.toFixed(2)} € ·
+            total odds {placement.totalOdds.toFixed(2)}
+          </p>
+          <p className="mt-1">Potential return {placement.potentialReturn.toFixed(2)} €</p>
+        </div>
+      ) : null}
+
       <button
-        onClick={onDone}
+        onClick={() => setTicketOpen((v) => !v)}
         className="mt-4 min-h-11 w-full rounded-md bg-primary py-2.5 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90"
       >
-        Continue betting
+        {ticketOpen ? "Hide ticket" : "View ticket"}
+      </button>
+      <button
+        onClick={onDone}
+        className="mt-2 min-h-11 w-full rounded-md border border-border py-2.5 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
+      >
+        Done
       </button>
     </div>
   );
@@ -153,10 +172,11 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
           responsibleGate.pass ? "bg-surface-2 text-muted-foreground" : "bg-destructive/15 text-destructive",
         )}
       >
-        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" />
+        <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
         <span className="min-w-0">
-          Responsible play check: <b>{responsibleGate.pass ? "PASS" : "BLOCK"}</b> —{" "}
-          {responsibleGate.reason}
+          {responsibleGate.pass
+            ? "✓ Responsible play check passed"
+            : "Responsible play check not passed"}
         </span>
       </div>
 
