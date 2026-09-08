@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from "react";
-import { PskHeader, PskSubNav } from "./PskHeader";
+import { PskHeader, PskMobileSearch, PskSubNav } from "./PskHeader";
 import { PskSidebar } from "./PskSidebar";
 import { BetslipRail, BetslipSheet } from "./Betslip";
 import { SearchOverlay } from "./SearchOverlay";
@@ -9,12 +9,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background">
+    <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
       <PskHeader />
+      <PskMobileSearch onSearch={() => setSearchOpen(true)} />
       <PskSubNav onSearch={() => setSearchOpen(true)} />
-      <div className="flex min-h-0 flex-1 items-start">
+      <div className="flex min-h-0 w-full min-w-0 flex-1 items-start">
         <PskSidebar className="sticky top-[104px] hidden max-h-[calc(100vh-104px)] lg:block" />
-        <main className="min-w-0 flex-1 px-3 pt-4 pb-28 sm:px-5 xl:pb-8">{children}</main>
+        <main className="min-w-0 flex-1 px-3 pt-4 pb-32 sm:px-5 xl:pb-8">{children}</main>
         <BetslipRail className="sticky top-[104px] hidden max-h-[calc(100vh-104px)] xl:block" />
       </div>
       <SearchOverlay open={searchOpen} onClose={() => setSearchOpen(false)} />
