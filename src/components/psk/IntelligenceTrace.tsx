@@ -197,7 +197,9 @@ export function IntelligenceTrace() {
                     : "—"
                 }
               />
-              <Stat label="Sport context" value={context} />
+              {sessionContext.activeProduct === "Sport" ? (
+                <Stat label="Sport context" value={context} />
+              ) : null}
               <Stat label="Active event" value={sessionContext.activeEvent ?? "—"} />
               {sessionContext.previousEvent ? (
                 <Stat label="Previous event" value={sessionContext.previousEvent} />
@@ -381,9 +383,14 @@ export function IntelligenceTrace() {
               <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Production target architecture — not connected in this prototype
               </p>
+              <p className="mt-1 break-words text-[10px] text-muted-foreground">
+                Cross-product: PSK → Sports · Live · Casino · Live Casino · Lotto · Virtuals ·
+                Forum · PSK Arena — each existing product feeds the same shared interaction-event
+                and session-intelligence architecture. Context stays scoped to the active product.
+              </p>
               <ol className="mt-1 space-y-0.5 text-[11px]">
                 {[
-                  ["PSK interaction events", "Web / app interaction events"],
+                  ["PSK interaction events", "All existing products, web / app interaction events"],
                   ["Kafka / event stream", "Kafka topics behind NGINX-fronted API services"],
                   ["Session Engine", "Short-lived session state (Redis)"],
                   ["Intent + Context + Friction", "Elasticsearch-backed entity resolution"],
