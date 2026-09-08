@@ -32,11 +32,23 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
     return () => clearTimeout(t);
   }, [query]);
 
-  const results = useMemo(() => searchMatches(debounced), [debounced]);
+  const intent = useMemo(
+    () => inferIntent(debounced, recentInterest),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [debounced],
+  );
+  const results = intent.hits;
 
   useEffect(() => {
     if (debounced.trim().length >= 2) {
-      log("search", `"${debounced.trim()}"`, `${results.length} result(s)`, ["search"]);
+      log(
+        "search",
+        `"${debounced.trim()}"`,
+        `${results.length} result(s) · intent ${intent.intent} · confidence ${intent.confidence.toFixed(2)}`,
+        ["search"],
+        { results: results.length, confidence: intent.confidence },
+      );
+      if (results.length === 0) friction("Search returned no results (prototype signal)", 12);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [debounced]);
