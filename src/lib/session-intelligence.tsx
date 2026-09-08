@@ -153,7 +153,8 @@ function reducer(state: State, action: Action): State {
         `Bet placed · ref ${action.placement.ref}`,
         `${action.placement.selections.length} selection(s) · ${action.placement.stake.toFixed(2)} €`,
       );
-      return { ...next, lastPlacement: action.placement, selections: [], betslipOpen: false };
+      // Keep the betslip open so the confirmation stays visible on mobile.
+      return { ...next, lastPlacement: action.placement, selections: [] };
     }
     case "reset":
       return { ...initial, traceOpen: state.traceOpen, startedAtKeep: undefined } as State;
