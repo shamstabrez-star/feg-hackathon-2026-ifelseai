@@ -365,7 +365,7 @@ export function IntelligenceTrace() {
 
             <details className="mt-2 rounded-sm bg-surface-2/60 p-2">
               <summary className="cursor-pointer text-[11px] font-bold">
-                Production architecture
+                Production target
               </summary>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Production target architecture — not connected in this prototype
