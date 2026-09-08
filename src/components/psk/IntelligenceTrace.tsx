@@ -289,7 +289,14 @@ export function IntelligenceTrace() {
             ) : null}
 
             <details className="mt-3 rounded-sm bg-surface-2/60 p-2">
-              <summary className="cursor-pointer text-[11px] font-bold">Evidence (judges)</summary>
+              <summary className="cursor-pointer text-[11px] font-bold">
+                Dataset evidence (judges)
+              </summary>
+              <p className="mt-1 text-[10px] text-muted-foreground">
+                Prototype uses supplied challenge datasets for baseline evidence. Production
+                deployment would consume PSK event streams in real time. Dataset figures are fixed
+                and do not change as you click through this demo.
+              </p>
 
               <EvidenceList
                 title="Live session metrics"
