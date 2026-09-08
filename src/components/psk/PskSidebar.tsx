@@ -65,7 +65,9 @@ function useRecommendRail() {
     ? "Continue where you left off"
     : state.searchContext
       ? "Related to your search"
-      : "We recommend";
+      : sessionContext.contextConfidence === "HIGH"
+        ? "Relevant to you"
+        : "We recommend";
 
 
 
