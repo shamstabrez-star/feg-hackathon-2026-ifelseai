@@ -631,6 +631,17 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     }
   }
 
+  /* Outside Sports the response wording stays product-neutral. */
+  const productResponse = inSport
+    ? experienceResponse(productDecision)
+    : productDecision === "DISCOVER"
+      ? "Prioritise relevant existing content"
+      : productDecision === "CONTINUE"
+        ? "Continue current context"
+        : productDecision === "SIMPLIFY"
+          ? "Narrow the existing choice set"
+          : "No adaptation";
+
 
   const productOutcome = !inSport
     ? state.productQuery
