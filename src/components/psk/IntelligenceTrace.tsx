@@ -109,12 +109,14 @@ export function IntelligenceTrace() {
         : "text-red-400";
 
   const completed = !!state.lastPlacement;
-  const focus = contextMatch({
-    interest: state.interest,
-    viewedMatches: state.viewedMatches,
-    lastViewedMatchId: state.lastViewedMatchId,
-    searchContext: state.searchContext,
-  });
+  const focus = state.contextCleared
+    ? undefined
+    : contextMatch({
+        interest: state.interest,
+        viewedMatches: state.viewedMatches,
+        lastViewedMatchId: state.lastViewedMatchId,
+        searchContext: state.searchContext,
+      });
   const context = focus
     ? `${focus.competition} · ${focus.live ? "Live" : "Upcoming"}`
     : "Football · Offer";
@@ -166,7 +168,22 @@ export function IntelligenceTrace() {
                 </>
               ) : null}
               <Stat label="Context" value={context} />
+              <Stat label="Active event" value={sessionContext.activeEvent ?? "—"} />
+              {sessionContext.previousEvent ? (
+                <Stat label="Previous event" value={sessionContext.previousEvent} />
+              ) : null}
+              <Stat label="Context confidence" value={sessionContext.contextConfidence} />
+              <Stat
+                label="Context"
+                value={`${sessionContext.contextState.toUpperCase()}${
+                  sessionContext.contextSwitched ? " · switch YES" : ""
+                }`}
+              />
+              {sessionContext.lastViewedMarket ? (
+                <Stat label="Last market" value={sessionContext.lastViewedMarket} />
+              ) : null}
               <Stat label="Journey" value={journey} />
+
 
               <Stat label="Friction" value={sessionContext.frictionLevel} />
               <Stat label="Decision" value={intelligence.decision} />

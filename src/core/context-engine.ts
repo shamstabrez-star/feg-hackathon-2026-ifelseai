@@ -1,6 +1,6 @@
 import { matches as allMatches, type Match } from "@/data/psk-data";
 import { relevanceScore } from "./relevance-engine";
-import type { SearchContext } from "./types";
+import type { ContextConfidence, ContextState, SearchContext } from "./types";
 
 /**
  * Layer 4 — Context engine.
@@ -28,8 +28,42 @@ export type Group = {
 
 /** The match the session is currently anchored on, from live context only. */
 export function contextMatch(ctx: ContextInput): Match | undefined {
-  const id = ctx.searchContext?.matchId ?? ctx.lastViewedMatchId ?? ctx.viewedMatches[0];
+  const id = ctx.lastViewedMatchId ?? ctx.searchContext?.matchId ?? ctx.viewedMatches[0];
   return id ? allMatches.find((m) => m.id === id) : undefined;
+}
+
+/**
+ * Short-lived context memory: how sure the prototype is that the active event
+ * really is the customer's current task. Only HIGH/MEDIUM adapt the interface.
+ */
+export function contextConfidence(input: {
+  focus: Match | undefined;
+  interest: Record<string, number>;
+  searchMatched: boolean;
+  selections: number;
+  returning: boolean;
+}): ContextConfidence {
+  if (!input.focus) return "LOW";
+  const engaged = (input.interest[input.focus.id] ?? 0) >= 2;
+  if (input.selections > 0 || engaged || (input.searchMatched && input.returning)) return "HIGH";
+  if (input.searchMatched || input.returning) return "MEDIUM";
+  return "LOW";
+}
+
+/** Lifecycle label for the active context — judge trace only. */
+export function contextState(input: {
+  cleared: boolean;
+  switched: boolean;
+  restored: boolean;
+  hasFocus: boolean;
+  viewedCount: number;
+}): ContextState {
+  if (input.cleared) return "cleared";
+  if (!input.hasFocus) return "none";
+  if (input.switched) return "switched";
+  if (input.restored) return "restored";
+  if (input.viewedCount > 1) return "retained";
+  return "established";
 }
 
 function scoreFor(ctx: ContextInput) {

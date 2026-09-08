@@ -47,24 +47,26 @@ const sportsGroups: { title: string; items: { label: string; count: number }[] }
  * no meaningful reason to adapt, it does nothing.
  */
 function useRecommendRail() {
-  const { state } = useSession();
-  const focus = contextMatch({
-    interest: state.interest,
-    viewedMatches: state.viewedMatches,
-    lastViewedMatchId: state.lastViewedMatchId,
-    searchContext: state.searchContext,
-  });
+  const { state, sessionContext } = useSession();
+  const focus = state.contextCleared
+    ? undefined
+    : contextMatch({
+        interest: state.interest,
+        viewedMatches: state.viewedMatches,
+        lastViewedMatchId: state.lastViewedMatchId,
+        searchContext: state.searchContext,
+      });
 
-  if (!focus) return { title: "We recommend", items: staticRecommended };
+  // Weak context never changes the ordinary PSK rail.
+  if (!focus || sessionContext.contextConfidence === "LOW")
+    return { title: "We recommend", items: staticRecommended };
 
-  const strong = (state.interest[focus.id] ?? 0) >= 2 || state.selections.length > 0;
-  const title = state.lastViewedMatchId
-    ? strong
-      ? "Relevant to you"
-      : "Continue where you left off"
+  const title = state.viewedMatches.includes(focus.id)
+    ? "Continue where you left off"
     : state.searchContext
       ? "Related to your search"
       : "We recommend";
+
 
 
   const around = [focus, ...relatedMatches(focus, 2)];

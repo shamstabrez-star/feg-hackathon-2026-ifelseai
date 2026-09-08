@@ -40,6 +40,7 @@ export type Ctx = {
   setBetslip: (open: boolean) => void;
   viewMatch: (matchId: string) => void;
   setMarketTier: (matchId: string, tier: MarketTier) => void;
+  viewMarket: (marketName: string) => void;
   setSearchContext: (context: SearchContext | null) => void;
   /** Resolved session intent — plain label plus prototype confidence. */
   setIntent: (intent: SessionIntent | null, resolved: boolean) => void;

@@ -39,17 +39,22 @@ export const Route = createFileRoute("/match/$matchId")({
 
 function MatchPage() {
   const { match } = Route.useLoaderData();
-  const { toggleSelection, state, log, friction, viewMatch, setMarketTier } = useSession();
+    const { toggleSelection, state, log, friction, viewMatch, setMarketTier, viewMarket } =
+    useSession();
   // In-session continuity: markets already unfolded for this match come back.
   const [tier, setTier] = useState<1 | 2 | 3>(state.marketTier[match.id] ?? 1);
   const [expanding, setExpanding] = useState(false);
   const dwell = useRef(Date.now());
   // Only true when this match was already opened earlier in the session.
   const [returning, setReturning] = useState(false);
+  // Market the customer last opened here, restored when they come back.
+  const [restoredMarket, setRestoredMarket] = useState<string | null>(null);
 
   useEffect(() => {
     log("navigation", `Viewing ${match.home} - ${match.away}`, match.competition, [match.id]);
-    setReturning(state.viewedMatches.includes(match.id));
+    const seen = state.viewedMatches.includes(match.id);
+    setReturning(seen);
+    setRestoredMarket(seen ? state.lastViewedMarket : null);
     viewMatch(match.id);
     setTier(state.marketTier[match.id] ?? 1);
     dwell.current = Date.now();
@@ -101,7 +106,10 @@ function MatchPage() {
 
       {returning ? (
         <p className="mt-3 rounded-md bg-surface-2 px-3 py-2 text-xs text-muted-foreground">
-          Continue · your markets for this match are still open.
+          Continue ·{" "}
+          {restoredMarket
+            ? `${restoredMarket} and your other markets are still open.`
+            : "your markets for this match are still open."}
         </p>
       ) : null}
 
@@ -128,7 +136,10 @@ function MatchPage() {
                     type="button"
                     aria-pressed={active}
                     aria-label={`${market.name}, ${o.label}, odds ${o.odds.toFixed(2)}`}
-                    onClick={() => toggleSelection(match, market, o)}
+                    onClick={() => {
+                      viewMarket(market.name);
+                      toggleSelection(match, market, o);
+                    }}
                     className={cn(
                       "grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-3 py-3 text-left transition-colors duration-150 active:scale-[0.99]",
                       active
@@ -157,6 +168,8 @@ function MatchPage() {
             setTimeout(() => {
               setTier(next);
               setMarketTier(match.id, next);
+              const revealed = match.markets.find((mk) => mk.tier === next);
+              if (revealed) viewMarket(revealed.name);
               setExpanding(false);
               log(
                 "market_expand",
