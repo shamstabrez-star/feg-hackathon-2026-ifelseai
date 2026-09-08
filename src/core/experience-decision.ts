@@ -62,7 +62,14 @@ export function decideExperience(input: DecisionInput): { decision: Decision; wh
 
   // 1 — Responsible gate.
   if (input.gate === "SILENCE") return { decision: "NONE", why: DECISION_WHY.silence };
-  if (input.gate === "ADAPT") return { decision: "SIMPLIFY", why: DECISION_WHY.adapt };
+  if (input.gate === "ADAPT")
+    return {
+      decision: "SIMPLIFY",
+      why:
+        input.frictionLevel === "LOW"
+          ? DECISION_WHY.adapt
+          : `Responsible adaptation · ${input.frictionReason} → choice set narrowed.`,
+    };
 
   // 2 — Friction. Repeated unproductive discovery narrows the existing choice
   // set: ordering only, never a prompt, never a promotion.
