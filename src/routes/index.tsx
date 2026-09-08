@@ -58,16 +58,18 @@ function Index() {
   return (
     <AppShell>
       <div className="rounded-md bg-surface">
-        <div className="flex items-stretch overflow-x-auto">
+        <nav aria-label="Offer time filter" className="flex items-stretch overflow-x-auto">
           {filters.map((f) => (
             <button
               key={f}
+              type="button"
+              aria-pressed={f === filter}
               onClick={() => {
                 setFilter(f);
                 log("navigation", `Offer filter · ${f}`);
               }}
               className={cn(
-                "shrink-0 border-b-2 px-6 py-4 text-sm font-semibold tracking-wide",
+                "min-h-12 shrink-0 border-b-2 px-5 py-4 text-sm font-semibold tracking-wide transition-colors sm:px-6",
                 f === filter
                   ? "border-primary text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground",
@@ -76,22 +78,27 @@ function Index() {
               {f}
             </button>
           ))}
-        </div>
+        </nav>
       </div>
 
       <h1 className="mt-5 text-xl font-bold">Football</h1>
 
-      <div className="mt-3 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+      <nav
+        aria-label="Event categories"
+        className="mt-3 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+      >
         {[{ id: "all", title: "All events" }, ...groups.map((g) => ({ id: g.id, title: g.title }))].map(
           (c) => (
             <button
               key={c.id}
+              type="button"
+              aria-pressed={category === c.id}
               onClick={() => {
                 setCategory(c.id);
                 log("navigation", `Category · ${c.title}`);
               }}
               className={cn(
-                "shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold transition-colors",
+                "min-h-9 shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors",
                 category === c.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface-2 text-muted-foreground hover:text-foreground",
@@ -101,7 +108,7 @@ function Index() {
             </button>
           ),
         )}
-      </div>
+      </nav>
 
       <div className="mt-4 space-y-6">
         {shown.length === 0 ? (
@@ -170,16 +177,26 @@ function Index() {
                         return (
                           <button
                             key={o.id}
+                            type="button"
+                            aria-pressed={active}
+                            aria-label={`${main.name}, ${o.label}, odds ${o.odds.toFixed(2)}, ${match.home} against ${match.away}`}
                             onClick={() => toggleSelection(match, main, o)}
                             className={cn(
-                              "min-w-0 rounded-md py-2.5 text-center transition-colors sm:py-3",
+                              "min-h-12 min-w-0 rounded-md py-2.5 text-center transition-colors duration-150 active:scale-[0.98] sm:py-3",
                               active
-                                ? "bg-primary text-primary-foreground"
+                                ? "bg-primary font-bold text-primary-foreground ring-2 ring-primary/50"
                                 : "bg-odds text-odds-foreground hover:bg-surface-2",
                             )}
                           >
-                            <div className="truncate text-[11px] text-muted-foreground">{o.label}</div>
-                            <div className="text-sm font-bold">{o.odds.toFixed(2)}</div>
+                            <div
+                              className={cn(
+                                "truncate text-[11px]",
+                                active ? "text-primary-foreground/80" : "text-muted-foreground",
+                              )}
+                            >
+                              {o.label}
+                            </div>
+                            <div className="text-sm font-bold tabular-nums">{o.odds.toFixed(2)}</div>
                           </button>
                         );
                       })}

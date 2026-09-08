@@ -56,6 +56,36 @@ export function performanceMetrics(state: SessionState, sessionSeconds: number):
       note: "Browser Navigation Timing API",
     },
     {
+      id: "perf-search",
+      label: "Search response time",
+      value: state.perf.searchMs !== null ? `${state.perf.searchMs} ms` : "unavailable",
+      source: "measured",
+      note: "Debounced query settled → results rendered (Performance API)",
+    },
+    {
+      id: "perf-interaction",
+      label: "Interaction latency",
+      value: state.perf.interactionMs !== null ? `${state.perf.interactionMs} ms` : "unavailable",
+      source: "measured",
+      note: "Last odds selection: click → state committed",
+    },
+    {
+      id: "perf-first-action",
+      label: "First meaningful action",
+      value: state.perf.firstSelectionMs
+        ? `${(state.perf.firstSelectionMs / 1000).toFixed(1)} s`
+        : "unavailable",
+      source: "measured",
+      note: "Session start → first odd selected",
+    },
+    {
+      id: "perf-requests",
+      label: "Network requests",
+      value: state.perf.requests !== null ? String(state.perf.requests) : "unavailable",
+      source: "measured",
+      note: "Browser Resource Timing API entries",
+    },
+    {
       id: "perf-longtasks",
       label: "Long tasks observed",
       value: String(state.perf.longTasks),

@@ -62,6 +62,8 @@ type Ctx = {
   viewMatch: (matchId: string) => void;
   setMarketTier: (matchId: string, tier: MarketTier) => void;
   setSearchContext: (context: SearchContext | null) => void;
+  /** Records a real browser measurement; never used for invented values. */
+  measure: (patch: { searchMs?: number; interactionMs?: number }) => void;
   resetSession: (path?: DemoPath) => void;
   runDemoPath: (path: Exclude<DemoPath, "none">) => void;
   totalOdds: number;
@@ -98,13 +100,25 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     [],
   );
 
+  const measure = useCallback<Ctx["measure"]>(
+    (patch) => dispatch({ type: "perf", patch }),
+    [],
+  );
+
   // Real browser measurements — Performance API only, no invented numbers.
   useEffect(() => {
     const nav = performance.getEntriesByType("navigation")[0] as
       | PerformanceNavigationTiming
       | undefined;
     if (nav) dispatch({ type: "perf", patch: { navMs: Math.round(nav.duration) } });
-    if (typeof PerformanceObserver === "undefined") return;
+    const countRequests = () =>
+      dispatch({
+        type: "perf",
+        patch: { requests: performance.getEntriesByType("resource").length },
+      });
+    countRequests();
+    const requestTimer = setInterval(countRequests, 5000);
+    if (typeof PerformanceObserver === "undefined") return () => clearInterval(requestTimer);
     let count = 0;
     let observer: PerformanceObserver | null = null;
     try {
@@ -116,10 +130,14 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     } catch {
       observer = null;
     }
-    return () => observer?.disconnect();
+    return () => {
+      clearInterval(requestTimer);
+      observer?.disconnect();
+    };
   }, []);
 
   const toggleSelection = useCallback((match: Match, market: Market, outcome: Outcome) => {
+    const t0 = performance.now();
     dispatch({
       type: "toggleSelection",
       selection: {
@@ -131,6 +149,10 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
         odds: outcome.odds,
       } satisfies Selection,
     });
+    // Measured, not estimated: time until the committed state paints.
+    requestAnimationFrame(() =>
+      dispatch({ type: "perf", patch: { interactionMs: Math.round(performance.now() - t0) } }),
+    );
   }, []);
 
   const derived = useMemo(() => deriveSession(state), [state]);
@@ -218,6 +240,7 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     viewMatch: (matchId) => dispatch({ type: "viewMatch", matchId }),
     setMarketTier: (matchId, tier) => dispatch({ type: "setMarketTier", matchId, tier }),
     setSearchContext: (context) => dispatch({ type: "searchContext", context }),
+    measure,
     resetSession,
     runDemoPath,
     totalOdds: derived.totalOdds,

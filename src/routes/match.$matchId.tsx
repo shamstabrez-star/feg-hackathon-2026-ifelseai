@@ -42,6 +42,7 @@ function MatchPage() {
   const { toggleSelection, state, log, friction, viewMatch, setMarketTier } = useSession();
   // In-session continuity: markets already unfolded for this match come back.
   const [tier, setTier] = useState<1 | 2 | 3>(state.marketTier[match.id] ?? 1);
+  const [expanding, setExpanding] = useState(false);
   const dwell = useRef(Date.now());
   // Only true when this match was already opened earlier in the session.
   const [returning, setReturning] = useState(false);
@@ -124,16 +125,21 @@ function MatchPage() {
                 return (
                   <button
                     key={o.id}
+                    type="button"
+                    aria-pressed={active}
+                    aria-label={`${market.name}, ${o.label}, odds ${o.odds.toFixed(2)}`}
                     onClick={() => toggleSelection(match, market, o)}
                     className={cn(
-                      "grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-3 py-3 text-left transition-colors",
+                      "grid min-h-12 grid-cols-[minmax(0,1fr)_auto] items-center gap-2 rounded-md px-3 py-3 text-left transition-colors duration-150 active:scale-[0.99]",
                       active
-                        ? "bg-primary text-primary-foreground"
+                        ? "bg-primary font-bold text-primary-foreground ring-2 ring-primary/50"
                         : "bg-odds text-odds-foreground hover:bg-surface-2",
                     )}
                   >
                     <span className="truncate text-xs">{o.label}</span>
-                    <span className="shrink-0 text-sm font-bold">{o.odds.toFixed(2)}</span>
+                    <span className="shrink-0 text-sm font-bold tabular-nums">
+                      {o.odds.toFixed(2)}
+                    </span>
                   </button>
                 );
               })}
@@ -144,19 +150,38 @@ function MatchPage() {
 
       {tier < 3 ? (
         <button
+          type="button"
           onClick={() => {
             const next = (tier + 1) as 2 | 3;
-            setTier(next);
-            setMarketTier(match.id, next);
-            log("market_expand", `Showing more markets (tier ${next})`, `${match.home} - ${match.away}`, [
-              match.id,
-            ]);
+            setExpanding(true);
+            setTimeout(() => {
+              setTier(next);
+              setMarketTier(match.id, next);
+              setExpanding(false);
+              log(
+                "market_expand",
+                `Showing more markets (tier ${next})`,
+                `${match.home} - ${match.away}`,
+                [match.id],
+              );
+            }, 200);
           }}
-          className="mt-4 flex w-full items-center justify-center gap-2 rounded-md bg-surface py-3 text-sm font-semibold text-muted-foreground hover:text-foreground"
+          className="mt-4 flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-surface py-3 text-sm font-semibold text-muted-foreground transition-colors hover:text-foreground"
         >
-          Show more markets
-          <ChevronDown className="h-4 w-4" />
+          {expanding ? "Loading markets…" : "Show more markets"}
+          <ChevronDown className="h-4 w-4" aria-hidden="true" />
         </button>
+      ) : null}
+
+      {expanding ? (
+        <div className="mt-3 space-y-2" aria-hidden="true">
+          <div className="skeleton h-4 w-40" />
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="skeleton h-12" />
+            ))}
+          </div>
+        </div>
       ) : null}
 
       {related.length ? (

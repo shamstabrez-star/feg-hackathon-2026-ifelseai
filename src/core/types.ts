@@ -87,4 +87,10 @@ export type PerfState = {
   firstSelectionMs: number | null;
   longTasks: number;
   navMs: number | null;
+  /** Last measured search response time, input settled → results rendered. */
+  searchMs: number | null;
+  /** Last measured UI interaction latency (click → state committed). */
+  interactionMs: number | null;
+  /** Network requests observed by the browser Resource Timing API. */
+  requests: number | null;
 };
