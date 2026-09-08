@@ -192,6 +192,12 @@ export function IntelligenceTrace() {
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
+            <div className="mt-2 rounded-sm bg-surface-2 p-2">
+              <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                Why
+              </p>
+              <p className="mt-0.5 break-words text-[11px]">{intelligence.decisionWhy}</p>
+            </div>
             {completed ? (
               <div className="mt-2 rounded-sm bg-surface-2 p-2">
                 <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">

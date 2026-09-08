@@ -373,8 +373,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "perf":
       return { ...state, perf: { ...state.perf, ...action.patch } };
     case "viewMatch": {
+      // Re-reaching the same event still counts as finding the target, so any
+      // strain picked up since then is released.
       if (state.lastViewedMatchId === action.matchId)
-        return state.contextSwitched ? { ...state, contextSwitched: false } : state;
+        return { ...state, contextSwitched: false, targetDiscovered: true };
       const switched = !!state.lastViewedMatchId && state.lastViewedMatchId !== action.matchId;
       return {
         ...state,
@@ -401,7 +403,13 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "setMarketTier":
       return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
     case "searchContext":
-      return { ...state, searchContext: action.context };
+      // A search that hands off to an event is a found target: strain picked
+      // up during the unsuccessful attempts is released.
+      return {
+        ...state,
+        searchContext: action.context,
+        targetDiscovered: action.context ? true : state.targetDiscovered,
+      };
     default:
       return state;
   }
@@ -523,7 +531,9 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     intentConfidence: confidence,
     hasContext: !!focus,
     returning: !!focus && state.contextRestored && !state.contextSwitched,
-    activeSearchResults: !!state.searchContext && state.intentResolved,
+    // A live query with usable results counts, even before the customer has
+    // opened one of them.
+    activeSearchResults: (!!state.searchContext || !!state.intent) && state.intentResolved,
   });
 
   const outcome = state.exited

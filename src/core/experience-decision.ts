@@ -38,39 +38,68 @@ export type DecisionInput = {
 export const COMPLETION_REASON =
   "Journey completed successfully. No additional intervention required.";
 
+/** Concise, judge-readable explanations for each decision path. */
+export const DECISION_WHY = {
+  completed: COMPLETION_REASON,
+  silence: "Responsible gate active — interventions suppressed.",
+  adapt: "Responsible adaptation — existing choice set reduced.",
+  simplify: "Repeated unsuccessful discovery → choice set narrowed.",
+  discover: "Search intent detected → prioritised relevant existing content.",
+  browsing: "Broad browsing without a clear target → surface relevant events.",
+  context: "Active event context → continue current journey.",
+  selection: "Active selection → stay out of the way.",
+  none: "Normal exploration — no adaptation required.",
+} as const;
+
+/**
+ * Priority: responsible gate → friction → active context → search intent → none.
+ * The gate is independent and is never overridden by optimisation logic.
+ */
 export function decideExperience(input: DecisionInput): { decision: Decision; why: string } {
-  if (input.exited) return { decision: "NONE", why: COMPLETION_REASON };
+  if (input.exited) return { decision: "NONE", why: DECISION_WHY.completed };
   if (input.hasPlacement && input.selectionCount === 0)
-    return { decision: "NONE", why: COMPLETION_REASON };
-  if (input.gate === "SILENCE")
-    return { decision: "NONE", why: "Responsible gate suppressed interventions" };
+    return { decision: "NONE", why: DECISION_WHY.completed };
+
+  // 1 — Responsible gate.
+  if (input.gate === "SILENCE") return { decision: "NONE", why: DECISION_WHY.silence };
   if (input.gate === "ADAPT")
-    return { decision: "SIMPLIFY", why: "Responsible adaptation — reduce choice" };
-  // Strong repeated evidence of struggling: make the known target easier to
-  // reach. Never a prompt, never a promotion — ordering only.
+    return {
+      decision: "SIMPLIFY",
+      why:
+        input.frictionLevel === "LOW"
+          ? DECISION_WHY.adapt
+          : `Responsible adaptation · ${input.frictionReason} → choice set narrowed.`,
+    };
+
+  // 2 — Friction. Repeated unproductive discovery narrows the existing choice
+  // set: ordering only, never a prompt, never a promotion.
   if (input.frictionLevel === "HIGH")
-    return { decision: "SIMPLIFY", why: `${input.frictionReason} — lead with the known target` };
+    return { decision: "SIMPLIFY", why: `${input.frictionReason} → choice set narrowed.` };
   if (input.frictionLevel === "MEDIUM") {
-    const strongTarget =
-      input.hasContext || (input.corrected && input.intentConfidence >= 0.6);
+    const strongTarget = input.hasContext || (input.corrected && input.intentConfidence >= 0.6);
     return strongTarget
-      ? { decision: "DISCOVER", why: `${input.frictionReason} — surface the relevant event` }
-      : { decision: "SIMPLIFY", why: `${input.frictionReason} — prioritise relevant results` };
+      ? { decision: "DISCOVER", why: `${input.frictionReason} → surfaced the relevant event.` }
+      : { decision: "SIMPLIFY", why: `${input.frictionReason} → choice set narrowed.` };
   }
-  // Recovery: the target was found, so the session is no longer labelled.
-  if (input.targetDiscovered && input.hasContext && input.selectionCount === 0)
-    return { decision: "CONTINUE", why: `${FRICTION_REASONS.discovered} — keep the journey moving` };
-  if (input.corrected && input.intentConfidence >= 0.6)
-    return { decision: "SIMPLIFY", why: "Query resolved to a clear target — lead with it" };
-  if (input.selectionCount > 0)
-    return { decision: "CONTINUE", why: "Active selection — stay out of the way" };
-  if (input.returning && input.hasContext)
-    return { decision: "CONTINUE", why: "Returning to a previously viewed event" };
-  if (input.activeSearchResults)
-    return { decision: "DISCOVER", why: "Active search with relevant results" };
+
+  // 3 — Active context.
+  if (input.selectionCount > 0) return { decision: "CONTINUE", why: DECISION_WHY.selection };
+  if (input.hasContext && (input.returning || input.targetDiscovered))
+    return {
+      decision: "CONTINUE",
+      why: input.targetDiscovered && !input.returning
+        ? `${FRICTION_REASONS.discovered} → continue current journey.`
+        : DECISION_WHY.context,
+    };
+
+  // 4 — Search intent.
+  if (input.activeSearchResults || (input.corrected && input.intentConfidence >= 0.6))
+    return { decision: "DISCOVER", why: DECISION_WHY.discover };
   if (input.interactions >= 4 && input.searches === 0)
-    return { decision: "DISCOVER", why: "Broad browsing without a clear target" };
-  return { decision: "NONE", why: "No signal strong enough to act on" };
+    return { decision: "DISCOVER", why: DECISION_WHY.browsing };
+
+  // 5 — Nothing worth acting on.
+  return { decision: "NONE", why: DECISION_WHY.none };
 }
 
 export type StageInput = {
