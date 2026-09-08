@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, notFound } from "@tanstack/react-router";
 import { ChevronDown } from "lucide-react";
 import { AppShell } from "@/components/psk/AppShell";
+import { ExperienceHint } from "@/components/psk/ExperienceHint";
 import { matchById } from "@/data/psk-data";
 import { useSession } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
@@ -78,6 +79,8 @@ function MatchPage() {
           </span>
         </div>
       </section>
+
+      <ExperienceHint className="mt-3" />
 
       <div className="mt-4 space-y-3">
         {visible.map((market) => (
