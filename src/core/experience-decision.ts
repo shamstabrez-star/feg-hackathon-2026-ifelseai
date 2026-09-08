@@ -35,8 +35,7 @@ export type DecisionInput = {
   activeSearchResults: boolean;
 };
 
-export const COMPLETION_REASON =
-  "Journey completed successfully. No additional intervention required.";
+export const COMPLETION_REASON = "Journey completed successfully.";
 
 /** Concise, judge-readable explanations for each decision path. */
 export const DECISION_WHY = {
