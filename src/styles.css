@@ -140,3 +140,32 @@
     scroll-behavior: auto !important;
   }
 }
+
+/* Intentional horizontal areas: chips, market tabs, dense odds rows.
+   The scroll is deliberate, so the browser scrollbar stays hidden. */
+@utility scroll-x {
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  overscroll-behavior-x: contain;
+  scroll-snap-type: x proximity;
+  -webkit-overflow-scrolling: touch;
+}
+
+@utility scroll-x-hidden {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.scroll-x::-webkit-scrollbar,
+.scroll-x-hidden::-webkit-scrollbar {
+  display: none;
+}
+
+/* No page-level sideways scrolling at any width. */
+html,
+body {
+  overflow-x: hidden;
+  max-width: 100%;
+}

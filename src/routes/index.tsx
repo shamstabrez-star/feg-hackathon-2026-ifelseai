@@ -58,7 +58,7 @@ function Index() {
   return (
     <AppShell>
       <div className="rounded-md bg-surface">
-        <nav aria-label="Offer time filter" className="flex items-stretch overflow-x-auto">
+        <nav aria-label="Offer time filter" className="scroll-x flex items-stretch">
           {filters.map((f) => (
             <button
               key={f}
@@ -85,7 +85,7 @@ function Index() {
 
       <nav
         aria-label="Event categories"
-        className="mt-3 -mx-1 flex gap-2 overflow-x-auto px-1 pb-1"
+        className="mt-3 scroll-x -mx-1 flex gap-2 px-1 pb-1"
       >
         {[{ id: "all", title: "All events" }, ...groups.map((g) => ({ id: g.id, title: g.title }))].map(
           (c) => (
