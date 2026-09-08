@@ -613,6 +613,27 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     activeSearchResults: (!!state.searchContext || !!state.intent) && state.intentResolved,
   });
 
+  /* Product isolation: outside Sports, the active product governs the context.
+     Sports context is kept only as previous context and never steers here. */
+  const product = PRODUCTS[state.activeProduct];
+  const inSport = state.activeProduct === "SPORT";
+  const productMemoryContext = inSport ? null : (state.productMemory[state.activeProduct] ?? null);
+  let productDecision: Decision = decision;
+  let productWhy = why;
+  if (!inSport) {
+    if (state.productQuery && (state.productResults ?? 0) > 0) {
+      productDecision = "DISCOVER";
+      productWhy = `${product.label} search intent detected → prioritised relevant existing content.`;
+    } else if (productMemoryContext) {
+      productDecision = "CONTINUE";
+      productWhy = `Active ${product.label.toLowerCase()} context → continue current journey.`;
+    } else {
+      productDecision = "NONE";
+      productWhy = "Normal exploration — no adaptation required.";
+    }
+  }
+
+
   const outcome = state.exited
     ? "Journey completed successfully"
     : state.lastPlacement
