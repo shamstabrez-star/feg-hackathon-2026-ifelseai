@@ -304,7 +304,7 @@ export function IntelligenceTrace() {
 
             <details className="mt-3 rounded-sm bg-surface-2/60 p-2">
               <summary className="cursor-pointer text-[11px] font-bold">
-                Dataset evidence (judges)
+                Evidence (judges)
               </summary>
               <p className="mt-1 text-[10px] text-muted-foreground">
                 Prototype uses supplied challenge datasets for baseline evidence. Production
