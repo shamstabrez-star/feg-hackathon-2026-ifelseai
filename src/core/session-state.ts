@@ -3,6 +3,7 @@ import { evaluateGate, type GateResult } from "./responsible-gate";
 import { COMPLETION_REASON, decideExperience, journeyStage } from "./experience-decision";
 import { contextConfidence, contextMatch, contextState } from "./context-engine";
 import { matchById } from "@/data/psk-data";
+import { PRODUCTS, type ProductKey } from "./product-context";
 import type {
   Decision,
   DemoPath,
@@ -90,6 +91,18 @@ export type SessionState = {
   targetDiscovered: boolean;
   /** Measured browser timings, filled from the Performance API. */
   perf: PerfState;
+  /** Existing PSK product the customer is currently in. */
+  activeProduct: ProductKey;
+  /** Product the session was in before this one. */
+  previousProduct: ProductKey | null;
+  /** Context label held in that previous product (history only). */
+  previousProductContext: string | null;
+  /** Last context reached inside each non-sport product, for continuity. */
+  productMemory: Partial<Record<ProductKey, string>>;
+  /** Live query inside the current non-sport product (sanitized text only). */
+  productQuery: string | null;
+  /** Result count for that query — measured, never invented. */
+  productResults: number | null;
 };
 
 export type SessionAction =
@@ -118,6 +131,9 @@ export type SessionAction =
   | { type: "betslipEngaged" }
   | { type: "beginTransaction" }
   | { type: "exit" }
+  | { type: "enterProduct"; product: ProductKey }
+  | { type: "productSearch"; query: string; results: number; topResult?: string | undefined }
+  | { type: "productSelect"; label: string }
   | { type: "stage"; stage: JourneyStage };
 
 function newSessionRef() {
