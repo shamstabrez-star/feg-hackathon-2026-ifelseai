@@ -1,18 +1,23 @@
-import { frictionScore } from "./friction-engine";
+import { frictionLevel, frictionScore } from "./friction-engine";
 import { evaluateGate, type GateResult } from "./responsible-gate";
-import { decideExperience, journeyStage } from "./experience-decision";
+import { COMPLETION_REASON, decideExperience, journeyStage } from "./experience-decision";
+import { contextMatch } from "./context-engine";
 import type {
   Decision,
   DemoPath,
   Engagement,
   EventKind,
+  FrictionLevel,
   FrictionSignal,
+  IntentConfidence,
   JourneyStage,
   MarketTier,
   PerfState,
   Placement,
   SearchContext,
   Selection,
+  SessionContextModel,
+  SessionIntent,
   TraceEvent,
 } from "./types";
 
@@ -52,6 +57,20 @@ export type SessionState = {
   /** Recent normalized queries, used to spot genuine reformulation loops. */
   recentQueries: string[];
   reformulations: number;
+  /** Resolved intent for this session, plain label plus prototype confidence. */
+  intent: SessionIntent | null;
+  /** Search results existed for the current query. */
+  intentResolved: boolean;
+  /** The customer engaged with the betslip itself (stake, open, place). */
+  betslipEngaged: boolean;
+  /** Confirm pressed — placement in flight. */
+  transactionStarted: boolean;
+  /** Done pressed after a completed journey. */
+  exited: boolean;
+  /** Stage before the current one, for the judge trace only. */
+  previousStage: JourneyStage | null;
+  /** Last market an outcome was selected from. */
+  lastSelectedMarket: string | null;
   /** Measured browser timings, filled from the Performance API. */
   perf: PerfState;
 };
@@ -76,7 +95,12 @@ export type SessionAction =
   | { type: "perf"; patch: Partial<PerfState> }
   | { type: "viewMatch"; matchId: string }
   | { type: "setMarketTier"; matchId: string; tier: MarketTier }
-  | { type: "searchContext"; context: SearchContext | null };
+  | { type: "searchContext"; context: SearchContext | null }
+  | { type: "intent"; intent: SessionIntent | null; resolved: boolean }
+  | { type: "betslipEngaged" }
+  | { type: "beginTransaction" }
+  | { type: "exit" }
+  | { type: "stage"; stage: JourneyStage };
 
 function newSessionRef() {
   return `S-${Math.random().toString(36).slice(2, 6).toUpperCase()}`;
@@ -114,6 +138,13 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     searchContext: null,
     recentQueries: [],
     reformulations: 0,
+    intent: null,
+    intentResolved: false,
+    betslipEngaged: false,
+    transactionStarted: false,
+    exited: false,
+    previousStage: null,
+    lastSelectedMarket: null,
   };
 }
 
@@ -201,6 +232,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       );
       return {
         ...next,
+        lastSelectedMarket: action.selection.marketName,
         selections: [...next.selections, action.selection],
         betslipOpen: true,
         perf: {
@@ -220,7 +252,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
       return { ...next, selections: next.selections.filter((s) => s.key !== action.key) };
     }
     case "setStake":
-      return { ...state, stake: action.stake };
+      return { ...state, stake: action.stake, betslipEngaged: true };
     case "friction": {
       const next = withEvent(
         state,
@@ -244,7 +276,12 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         `${action.placement.selections.length} selection(s) · ${action.placement.stake.toFixed(2)} €`,
       );
       // Keep the betslip open so the confirmation stays visible on mobile.
-      return { ...next, lastPlacement: action.placement, selections: [] };
+      return {
+        ...next,
+        lastPlacement: action.placement,
+        selections: [],
+        transactionStarted: false,
+      };
     }
     case "reset": {
       const fresh = makeInitialSession(action.demoPath);
@@ -253,7 +290,23 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "setTrace":
       return { ...state, traceOpen: action.open };
     case "setBetslip":
-      return { ...state, betslipOpen: action.open };
+      return { ...state, betslipOpen: action.open, betslipEngaged: state.betslipEngaged || action.open };
+    case "intent": {
+      if (
+        state.intent?.label === action.intent?.label &&
+        state.intentResolved === action.resolved
+      )
+        return state;
+      return { ...state, intent: action.intent, intentResolved: action.resolved };
+    }
+    case "betslipEngaged":
+      return state.betslipEngaged ? state : { ...state, betslipEngaged: true };
+    case "beginTransaction":
+      return { ...state, transactionStarted: true, betslipEngaged: true };
+    case "exit":
+      return state.exited ? state : { ...state, exited: true };
+    case "stage":
+      return state.previousStage === action.stage ? state : { ...state, previousStage: action.stage };
     case "perf":
       return { ...state, perf: { ...state.perf, ...action.patch } };
     case "viewMatch":
@@ -288,20 +341,50 @@ export type DerivedSession = {
   engagement: Engagement;
   sessionSeconds: number;
   friction: number;
+  frictionLevel: FrictionLevel;
   gate: GateResult;
   decision: Decision;
   decisionWhy: string;
   stage: JourneyStage;
+  /** The single privacy-safe session context object. */
+  context: SessionContextModel;
 };
 
 export function totalOdds(state: SessionState) {
   return state.selections.reduce((acc, s) => acc * s.odds, 1);
 }
 
+function confidenceBand(value: number): IntentConfidence {
+  if (value >= 0.75) return "high";
+  if (value >= 0.5) return "medium";
+  if (value > 0) return "low";
+  return "none";
+}
+
 export function deriveSession(state: SessionState, now = Date.now()): DerivedSession {
   const odds = totalOdds(state);
   const friction = frictionScore(state);
   const gate = evaluateGate(state.stake, friction);
+  const focus = contextMatch({
+    interest: state.interest,
+    viewedMatches: state.viewedMatches,
+    lastViewedMatchId: state.lastViewedMatchId,
+    searchContext: state.searchContext,
+  });
+  const confidence = state.intent?.confidence ?? 0;
+  const stage = journeyStage({
+    searches: state.searches,
+    intentConfidence: confidence,
+    hasIntent: !!state.intent,
+    lastViewedMatchId: state.lastViewedMatchId,
+    marketExpansions: state.marketExpansions,
+    selectionCount: state.selections.length,
+    betslipEngaged: state.betslipEngaged,
+    transactionStarted: state.transactionStarted,
+    hasPlacement: !!state.lastPlacement,
+    exited: state.exited,
+    interactions: state.interactions,
+  });
   const { decision, why } = decideExperience({
     gate: gate.state,
     friction,
@@ -310,7 +393,27 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     interactions: state.interactions,
     selectionCount: state.selections.length,
     hasPlacement: !!state.lastPlacement,
+    exited: state.exited,
+    corrected: !!state.searchContext?.corrected,
+    intentConfidence: confidence,
+    hasContext: !!focus,
+    returning: !!focus && state.viewedMatches.includes(focus.id),
+    activeSearchResults: !!state.searchContext && state.intentResolved,
   });
+
+  const outcome = state.exited
+    ? "Session closed"
+    : state.lastPlacement
+      ? "Bet accepted"
+      : state.transactionStarted
+        ? "Placement in progress"
+        : state.selections.length
+          ? "Selection added"
+          : focus
+            ? "Match opened"
+            : state.intent
+              ? "Intent understood"
+              : "Session active";
 
   return {
     totalOdds: odds,
@@ -323,16 +426,29 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
       state.selections.length > 0 ? "committed" : state.interactions > 4 ? "focused" : "browsing",
     sessionSeconds: Math.max(1, Math.round((now - state.startedAt) / 1000)),
     friction,
+    frictionLevel: frictionLevel(friction),
     gate,
     decision,
     decisionWhy: why,
-    stage: journeyStage({
-      searches: state.searches,
-      lastViewedMatchId: state.lastViewedMatchId,
-      marketExpansions: state.marketExpansions,
-      selectionCount: state.selections.length,
-      hasPlacement: !!state.lastPlacement,
-    }),
+    stage,
+    context: {
+      sessionId: state.sessionRef,
+      journeyStage: stage,
+      previousStage: state.previousStage,
+      intent: state.intent?.label ?? "Browse the offer",
+      intentConfidence: confidenceBand(confidence),
+      activeSport: focus ? "Football" : null,
+      activeEvent: focus ? `${focus.home} - ${focus.away}` : null,
+      activeCompetition: focus?.competition ?? null,
+      activeSearch: state.searchContext?.query ?? null,
+      lastViewedEvent: state.lastViewedMatchId,
+      lastSelectedMarket: state.lastSelectedMarket,
+      frictionLevel: frictionLevel(friction),
+      responsibleGate: gate.state,
+      experienceDecision: decision,
+      outcome,
+      reason: state.lastPlacement || state.exited ? COMPLETION_REASON : why,
+    },
   };
 }
 

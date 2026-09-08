@@ -65,6 +65,19 @@ export type SearchContext = {
   matchId?: string;
 };
 
+/** Resolved session intent — plain text label only, never personal data. */
+export type SessionIntent = {
+  /** e.g. "Find Real Madrid". */
+  label: string;
+  /** Prototype confidence, 0-1, from the transparent intent scoring. */
+  confidence: number;
+};
+
+export type IntentConfidence = "none" | "low" | "medium" | "high";
+
+/** Banded friction state — conservative thresholds over the prototype score. */
+export type FrictionLevel = "LOW" | "MEDIUM" | "HIGH";
+
 /** Responsible gate runs BEFORE any experience decision. */
 export type GateState = "PASS" | "ADAPT" | "SILENCE";
 /** Experience decision the customer UI may act on. */
@@ -76,10 +89,38 @@ export type Engagement = "browsing" | "focused" | "committed";
 export type JourneyStage =
   | "entry"
   | "discovery"
-  | "match"
+  | "intent"
+  | "context"
+  | "exploration"
   | "decision"
   | "action"
-  | "completion";
+  | "transaction"
+  | "completion"
+  | "exit";
+
+/**
+ * The privacy-safe session context object. Prototype values only: no player
+ * identifiers, tokens, cookies, URLs or personal data of any kind.
+ */
+export type SessionContextModel = {
+  sessionId: string;
+  journeyStage: JourneyStage;
+  previousStage: JourneyStage | null;
+  intent: string;
+  intentConfidence: IntentConfidence;
+  activeSport: string | null;
+  activeEvent: string | null;
+  activeCompetition: string | null;
+  activeSearch: string | null;
+  lastViewedEvent: string | null;
+  lastSelectedMarket: string | null;
+  frictionLevel: FrictionLevel;
+  responsibleGate: GateState;
+  experienceDecision: Decision;
+  outcome: string;
+  /** Plain-language reason behind the current experience decision. */
+  reason: string;
+};
 
 export type MarketTier = 1 | 2 | 3;
 

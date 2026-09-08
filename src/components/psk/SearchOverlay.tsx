@@ -34,8 +34,16 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const inputRef = useRef<HTMLInputElement>(null);
   const searchStart = useRef<number | null>(null);
   const navigate = useNavigate();
-  const { log, state, friction, setSearchContext, intelligence, responsibleGate, measure } =
-    useSession();
+  const {
+    log,
+    state,
+    friction,
+    setSearchContext,
+    setIntent,
+    intelligence,
+    responsibleGate,
+    measure,
+  } = useSession();
   const recentInterest = Object.keys(state.interest);
 
   useEffect(() => {
@@ -79,6 +87,16 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
         `${results.length} result(s) · intent ${intent.intent} · confidence ${intent.confidence.toFixed(2)}`,
         ["search"],
         { results: results.length, confidence: intent.confidence },
+      );
+      // Resolved intent — plain label only, never personal data.
+      setIntent(
+        {
+          label: intent.corrected
+            ? `Find ${intent.corrected}`
+            : `Find ${debounced.trim()}`,
+          confidence: intent.confidence,
+        },
+        results.length > 0,
       );
       if (results.length === 0) friction("Search returned no results (prototype signal)", 12);
     }
