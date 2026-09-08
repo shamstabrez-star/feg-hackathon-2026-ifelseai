@@ -79,6 +79,8 @@ function MatchPage() {
         </div>
       </section>
 
+      <ExperienceHint className="mt-3" />
+
       <div className="mt-4 space-y-3">
         {visible.map((market) => (
           <section key={market.id} className="rounded-md bg-surface p-4">
