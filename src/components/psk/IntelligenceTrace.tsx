@@ -159,8 +159,15 @@ export function IntelligenceTrace() {
                   Session
                 </p>
                 <p className="text-sm font-bold text-emerald-400">CLOSED</p>
+                <ul className="mt-1 space-y-0.5 text-[11px]">
+                  <li>Journey: COMPLETION → EXIT</li>
+                  <li>Friction: LOW</li>
+                  <li>Decision: NONE</li>
+                  <li>Responsible gate: PASS</li>
+                  <li>Outcome: Journey completed successfully</li>
+                </ul>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  Journey completed successfully — intelligence has stopped intervening.
+                  No further intervention required.
                 </p>
               </div>
             ) : null}
