@@ -40,11 +40,12 @@ export function searchMatches(query: string): Result[] {
       results.push({ match, reason: `Player · ${player}`, score: 2 });
       continue;
     }
-    // Loose variation fallback: any token is a prefix of a word in the fixture.
+    // Variation / typo tolerance: prefix or small edit distance against any word.
+    const words = normalize(`${team} ${match.competition} ${match.players.join(" ")}`).split(/\s+/);
     const loose = tokens.some((t) =>
-      normalize(`${team} ${match.competition}`)
-        .split(/\s+/)
-        .some((w) => w.startsWith(t.slice(0, Math.max(3, t.length - 1)))),
+      words.some(
+        (w) => w.startsWith(t.slice(0, Math.max(3, t.length - 1))) || editDistance(w, t) <= 2,
+      ),
     );
     if (loose) results.push({ match, reason: "Close match", score: 1 });
   }
