@@ -116,6 +116,9 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
       <p aria-live="polite" className="sr-only">
         {state.selections.length} selection{state.selections.length === 1 ? "" : "s"} on the betslip
       </p>
+      <h3 className="mb-2 text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+        Your selection
+      </h3>
       <ul className="space-y-2">
         {state.selections.map((s) => (
           <li
@@ -187,6 +190,10 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
         <div className="mt-3 rounded-md bg-surface-2 p-3">
           <p className="text-sm">
             Place {state.selections.length} selection(s) for {state.stake.toFixed(2)} €?
+          </p>
+          <p className="mt-1 text-xs text-muted-foreground">
+            Odds {totalOdds.toFixed(2)} · potential return {potentialReturn.toFixed(2)} €. If odds
+            change before you confirm, the betslip updates and you review again.
           </p>
           <div className="mt-3 flex gap-2">
             <button

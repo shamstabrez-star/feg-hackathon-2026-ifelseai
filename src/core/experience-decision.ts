@@ -113,6 +113,8 @@ export type StageInput = {
   hasPlacement: boolean;
   exited: boolean;
   interactions: number;
+  /** The customer kept opening markets after choosing an outcome. */
+  exploringSinceSelection: boolean;
 };
 
 /**
@@ -124,6 +126,9 @@ export function journeyStage(input: StageInput): JourneyStage {
   if (input.hasPlacement) return "completion";
   if (input.transactionStarted) return "transaction";
   if (input.selectionCount > 0 && input.betslipEngaged) return "action";
+  // Intended event and outcome chosen and exploration has stopped: the journey
+  // is ready for a decision, but nothing is ever committed automatically.
+  if (input.selectionCount > 0 && !input.exploringSinceSelection) return "decision_ready";
   if (input.selectionCount > 0) return "decision";
   if (input.lastViewedMatchId && input.marketExpansions > 0) return "exploration";
   if (input.lastViewedMatchId) return "context";

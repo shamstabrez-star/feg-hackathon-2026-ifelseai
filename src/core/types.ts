@@ -116,6 +116,8 @@ export type JourneyStage =
   | "context"
   | "exploration"
   | "decision"
+  /** Intended event and outcome chosen, exploration over, before any action. */
+  | "decision_ready"
   | "action"
   | "transaction"
   | "completion"
