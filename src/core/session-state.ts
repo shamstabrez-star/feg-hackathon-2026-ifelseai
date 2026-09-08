@@ -511,6 +511,15 @@ function matchLabel(id: string) {
   return m ? `${m.home} - ${m.away}` : null;
 }
 
+/** Context label currently held by the active product — product-scoped only. */
+export function currentProductContextLabel(state: SessionState): string {
+  if (state.activeProduct === "SPORT") {
+    const event = state.lastViewedMatchId ? matchLabel(state.lastViewedMatchId) : null;
+    return event ? `Football · ${event}` : PRODUCTS.SPORT.context;
+  }
+  return state.productMemory[state.activeProduct] ?? PRODUCTS[state.activeProduct].context;
+}
+
 export function totalOdds(state: SessionState) {
   return state.selections.reduce((acc, s) => acc * s.odds, 1);
 }
