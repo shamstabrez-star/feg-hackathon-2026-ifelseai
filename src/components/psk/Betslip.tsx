@@ -38,6 +38,7 @@ function Confirmation({ placement, onDone }: { placement: Placement; onDone: () 
 }
 
 export function BetslipBody({ onClose }: { onClose?: () => void }) {
+  // onClose is used by the confirmation "Continue betting" action on mobile.
   const {
     state,
     removeSelection,
@@ -142,10 +143,7 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
               onClick={() => {
                 const placement = place();
                 setConfirming(false);
-                if (placement) {
-                  setDone(placement);
-                  onClose?.();
-                }
+                if (placement) setDone(placement);
               }}
             >
               Confirm
