@@ -22,7 +22,7 @@ export type TraceEvent = {
     | "responsible_gate"
     | "placement";
   label: string;
-  detail?: string;
+  detail?: string | undefined;
 };
 
 export type Selection = {
@@ -59,7 +59,7 @@ type State = {
 };
 
 type Action =
-  | { type: "log"; kind: TraceEvent["kind"]; label: string; detail?: string; interest?: string[] }
+  | { type: "log"; kind: TraceEvent["kind"]; label: string; detail?: string | undefined; interest?: string[] | undefined }
   | { type: "toggleSelection"; selection: Selection }
   | { type: "removeSelection"; key: string }
   | { type: "setStake"; stake: number }
