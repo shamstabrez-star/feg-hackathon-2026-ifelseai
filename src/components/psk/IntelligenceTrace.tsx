@@ -136,11 +136,17 @@ export function IntelligenceTrace() {
               />
 
               {datasetsAvailable ? (
-                <EvidenceList
-                  title="Challenge dataset aggregates"
-                  items={datasetEvidence}
-                  tag="dataset"
-                />
+                <>
+                  <EvidenceList
+                    title="Challenge dataset aggregates"
+                    items={datasetEvidence}
+                    tag="dataset"
+                  />
+                  <p className="mt-1 text-[10px] text-muted-foreground">
+                    Anonymised cohort aggregates only. Not supplied to this prototype:{" "}
+                    {missingDatasets.join(", ")} — no figures are inferred for those sources.
+                  </p>
+                </>
               ) : (
                 <div className="mt-3">
                   <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
@@ -152,6 +158,7 @@ export function IntelligenceTrace() {
                   </p>
                 </div>
               )}
+
 
               <EvidenceList
                 title="Prototype assumptions"
