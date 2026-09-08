@@ -87,6 +87,8 @@ export type SessionState = {
   lobbyLoops: number;
   /** Something meaningful happened since the current event was opened. */
   progressSinceEvent: boolean;
+  /** Markets opened after an outcome was chosen — still exploring, not ready. */
+  exploringSinceSelection: boolean;
   /** The customer reached a plausible target (event opened / selection made). */
   targetDiscovered: boolean;
   /** Measured browser timings, filled from the Performance API. */
@@ -186,6 +188,7 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     contextCleared: false,
     lobbyLoops: 0,
     progressSinceEvent: false,
+    exploringSinceSelection: false,
     targetDiscovered: false,
     activeProduct: "SPORT",
     previousProduct: null,
@@ -300,6 +303,7 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         betslipOpen: true,
         progressSinceEvent: true,
         targetDiscovered: true,
+        exploringSinceSelection: false,
         perf: {
           ...next.perf,
           firstSelectionMs: next.perf.firstSelectionMs ?? Date.now() - next.startedAt,
@@ -464,10 +468,19 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     }
     case "viewMarket":
       return state.lastViewedMarket === action.marketName
-        ? { ...state, progressSinceEvent: true }
-        : { ...state, lastViewedMarket: action.marketName, progressSinceEvent: true };
+        ? { ...state, progressSinceEvent: true, exploringSinceSelection: true }
+        : {
+            ...state,
+            lastViewedMarket: action.marketName,
+            progressSinceEvent: true,
+            exploringSinceSelection: true,
+          };
     case "setMarketTier":
-      return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
+      return {
+        ...state,
+        exploringSinceSelection: true,
+        marketTier: { ...state.marketTier, [action.matchId]: action.tier },
+      };
     case "searchContext":
       // A search that hands off to an event is a found target: strain picked
       // up during the unsuccessful attempts is released.
@@ -589,6 +602,7 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     hasPlacement: !!state.lastPlacement,
     exited: state.exited,
     interactions: state.interactions,
+    exploringSinceSelection: state.exploringSinceSelection,
   });
   const { decision, why } = decideExperience({
     gate: gate.state,

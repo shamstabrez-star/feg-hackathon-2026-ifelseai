@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Activity, ChevronDown } from "lucide-react";
 import { contextMatch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
+import { useRailMotion } from "@/lib/rail-motion";
 import {
   datasetEvidence,
   datasetsAvailable,
@@ -96,6 +97,8 @@ export function IntelligenceTrace() {
     resetSession,
   } = useSession();
 
+  const railMotion = useRailMotion();
+
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
@@ -120,9 +123,10 @@ export function IntelligenceTrace() {
   const context = focus
     ? `${focus.competition} · ${focus.live ? "Live" : "Upcoming"}`
     : "Football · Offer";
+  const stageLabel = (s: string) => s.replace(/_/g, " ").toUpperCase();
   const journey = sessionContext.previousStage
-    ? `${sessionContext.previousStage.toUpperCase()} → ${sessionContext.journeyStage.toUpperCase()}`
-    : sessionContext.journeyStage.toUpperCase();
+    ? `${stageLabel(sessionContext.previousStage)} → ${stageLabel(sessionContext.journeyStage)}`
+    : stageLabel(sessionContext.journeyStage);
 
 
   return (
@@ -237,12 +241,20 @@ export function IntelligenceTrace() {
               <Stat label="Decision" value={intelligence.decision} />
               <Stat label="Response" value={sessionContext.experienceResponse} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
+              <Stat label="Content motion" value={railMotion.reason} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               Prototype responsible-control state. Responsible controls are evaluated independently
               of experience optimisation. This does not replace FEG production controls.
             </p>
+            {sessionContext.journeyStage === "decision_ready" ? (
+              <p className="mt-1 break-words text-[10px] text-muted-foreground">
+                Decision ready — intended event and outcome chosen, exploration stopped. The
+                existing betslip is kept immediately actionable; nothing is committed
+                automatically.
+              </p>
+            ) : null}
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Why this decision
@@ -443,6 +455,42 @@ export function IntelligenceTrace() {
                 Prototype implementation is simplified; production integration would connect these
                 intelligence services to the PSK event architecture.
               </p>
+              <blockquote className="mt-2 border-l-2 border-border pl-2 text-[10px] text-muted-foreground">
+                <p>
+                  “We are not trying to create intent. FEG already has the traffic. We are trying to
+                  capture the intent that already exists.”
+                </p>
+                <p className="mt-1">
+                  “When a user arrives with identifiable intent, PSK Intelligence reduces the
+                  friction between that intent and a meaningful action.”
+                </p>
+              </blockquote>
+              <div className="mt-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Production validation targets{" "}
+                  <span className="normal-case">(not achieved prototype results)</span>
+                </p>
+                <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                  {[
+                    "Session-to-action conversion",
+                    "Final-step conversion",
+                    "Time to first meaningful action",
+                    "Decision Ready → confirmation",
+                    "Search reformulation, navigation depth, abandonment",
+                    "Session value quality",
+                    "Journey completion",
+                    "Responsible guardrail adherence",
+                  ].map((m) => (
+                    <li key={m} className="break-words">
+                      {m} — Production target architecture
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  These are measurement targets for a production integration only. This prototype
+                  reports no outcome results against them.
+                </p>
+              </div>
             </details>
 
             <div className="mt-3">
