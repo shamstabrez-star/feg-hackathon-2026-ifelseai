@@ -10,6 +10,14 @@ import { IntelligenceTrace } from "./IntelligenceTrace";
 
 export function AppShell({ children }: { children: ReactNode }) {
   const [searchOpen, setSearchOpen] = useState(false);
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { enterProduct } = useSession();
+
+  // Product recognition follows real navigation only — no simulated moves.
+  useEffect(() => {
+    enterProduct(productFromPath(pathname));
+  }, [pathname, enterProduct]);
+
 
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
