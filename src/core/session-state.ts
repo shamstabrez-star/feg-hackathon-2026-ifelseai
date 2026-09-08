@@ -390,6 +390,52 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
             progressSinceEvent: false,
             targetDiscovered: false,
           };
+    case "enterProduct": {
+      if (state.activeProduct === action.product) return state;
+      const leaving = currentProductContextLabel(state);
+      const next = withEvent(
+        state,
+        "navigation",
+        `Product: ${PRODUCTS[action.product].label}`,
+        `Previous context: ${leaving}`,
+      );
+      return {
+        ...next,
+        activeProduct: action.product,
+        previousProduct: state.activeProduct,
+        previousProductContext: leaving,
+        // Context never crosses products: a new product starts with its own.
+        productQuery: null,
+        productResults: null,
+      };
+    }
+    case "productSearch": {
+      const label = PRODUCTS[state.activeProduct].label;
+      const next = withEvent(
+        state,
+        "search",
+        `"${action.query}"`,
+        `${label} · ${action.results} result(s)`,
+        undefined,
+        { results: action.results },
+      );
+      return {
+        ...next,
+        productQuery: action.query,
+        productResults: action.results,
+        productMemory: action.topResult
+          ? { ...state.productMemory, [state.activeProduct]: `${label} · ${action.topResult}` }
+          : state.productMemory,
+      };
+    }
+    case "productSelect": {
+      const label = PRODUCTS[state.activeProduct].label;
+      const next = withEvent(state, "navigation", `${label}: ${action.label}`);
+      return {
+        ...next,
+        productMemory: { ...state.productMemory, [state.activeProduct]: `${label} · ${action.label}` },
+      };
+    }
     case "stage":
       return state.previousStage === action.stage ? state : { ...state, previousStage: action.stage };
     case "perf":
