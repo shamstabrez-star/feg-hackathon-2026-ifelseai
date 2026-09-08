@@ -131,12 +131,12 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
         flat.length > 0,
       );
       if (flat.length === 0) friction("Search returned no results (prototype signal)", 12);
-    } else if (debounced.trim().length === 0) {
+    } else if (open && debounced.trim().length === 0) {
       // Cleared search — intent returns to unknown rather than lingering.
       setIntent(null, false);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [debounced]);
+  }, [debounced, open]);
 
   const openMatch = useCallback(
     (matchId: string, label: string) => {
