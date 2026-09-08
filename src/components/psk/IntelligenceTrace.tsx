@@ -259,7 +259,10 @@ export function IntelligenceTrace() {
             ) : null}
 
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              Prototype demo controls
+            </p>
+            <div className="mt-1 flex flex-wrap gap-2">
               <button
                 onClick={() => runDemoPath("success")}
                 className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface"
