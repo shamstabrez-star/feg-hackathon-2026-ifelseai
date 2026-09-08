@@ -46,58 +46,61 @@ export function businessMetrics(state: SessionState): EvidenceItem[] {
   ];
 }
 
+const UNAVAILABLE = "Unavailable in prototype";
+const MEASURED = "Measured in current prototype";
+
 export function performanceMetrics(state: SessionState, sessionSeconds: number): EvidenceItem[] {
   return [
     {
       id: "perf-nav",
       label: "Page load duration",
-      value: state.perf.navMs !== null ? `${state.perf.navMs} ms` : "unavailable",
+      value: state.perf.navMs !== null ? `${state.perf.navMs} ms` : UNAVAILABLE,
       source: "measured",
-      note: "Browser Navigation Timing API",
+      note: `${MEASURED} — Browser Navigation Timing API`,
     },
     {
       id: "perf-search",
       label: "Search response time",
-      value: state.perf.searchMs !== null ? `${state.perf.searchMs} ms` : "unavailable",
+      value: state.perf.searchMs !== null ? `${state.perf.searchMs} ms` : UNAVAILABLE,
       source: "measured",
-      note: "Debounced query settled → results rendered (Performance API)",
+      note: `${MEASURED} — debounced query settled → results rendered`,
     },
     {
       id: "perf-interaction",
       label: "Interaction latency",
-      value: state.perf.interactionMs !== null ? `${state.perf.interactionMs} ms` : "unavailable",
+      value: state.perf.interactionMs !== null ? `${state.perf.interactionMs} ms` : UNAVAILABLE,
       source: "measured",
-      note: "Last odds selection: click → state committed",
+      note: `${MEASURED} — last odds selection: click → state committed`,
     },
     {
       id: "perf-first-action",
-      label: "First meaningful action",
+      label: "Time to first action",
       value: state.perf.firstSelectionMs
         ? `${(state.perf.firstSelectionMs / 1000).toFixed(1)} s`
-        : "unavailable",
+        : UNAVAILABLE,
       source: "measured",
-      note: "Session start → first odd selected",
+      note: `${MEASURED} — session start → first odd selected`,
     },
     {
       id: "perf-requests",
-      label: "Network requests",
-      value: state.perf.requests !== null ? String(state.perf.requests) : "unavailable",
+      label: "Request count",
+      value: state.perf.requests !== null ? String(state.perf.requests) : UNAVAILABLE,
       source: "measured",
-      note: "Browser Resource Timing API entries",
+      note: `${MEASURED} — Browser Resource Timing API entries`,
     },
     {
       id: "perf-longtasks",
       label: "Long tasks observed",
       value: String(state.perf.longTasks),
       source: "measured",
-      note: "PerformanceObserver longtask entries (0 where unsupported)",
+      note: `${MEASURED} — PerformanceObserver longtask entries (0 where unsupported)`,
     },
     {
       id: "perf-session",
       label: "Session duration",
       value: `${sessionSeconds} s`,
       source: "measured",
-      note: "Wall time since this anonymous session started",
+      note: `${MEASURED} — wall time since this anonymous session started`,
     },
   ];
 }
