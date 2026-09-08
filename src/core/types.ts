@@ -86,6 +86,18 @@ export type SessionIntent = {
 
 export type IntentConfidence = "none" | "low" | "medium" | "high";
 
+/** Confidence in the short-lived active session context. */
+export type ContextConfidence = "LOW" | "MEDIUM" | "HIGH";
+
+/** Lifecycle of the active session context. */
+export type ContextState =
+  | "none"
+  | "established"
+  | "retained"
+  | "restored"
+  | "switched"
+  | "cleared";
+
 /** Banded friction state — conservative thresholds over the prototype score. */
 export type FrictionLevel = "LOW" | "MEDIUM" | "HIGH";
 
@@ -124,7 +136,16 @@ export type SessionContextModel = {
   activeCompetition: string | null;
   activeSearch: string | null;
   lastViewedEvent: string | null;
+  lastViewedMarket: string | null;
   lastSelectedMarket: string | null;
+  /** Event the session was anchored on before the current one, if any. */
+  previousEvent: string | null;
+  /** Confidence in the active context — only strong context adapts the UI. */
+  contextConfidence: ContextConfidence;
+  /** True when the customer clearly moved to a different task. */
+  contextSwitched: boolean;
+  /** Lifecycle of the active context, for the judge trace only. */
+  contextState: ContextState;
   frictionLevel: FrictionLevel;
   responsibleGate: GateState;
   experienceDecision: Decision;

@@ -1,7 +1,8 @@
 import { frictionLevel, frictionScore } from "./friction-engine";
 import { evaluateGate, type GateResult } from "./responsible-gate";
 import { COMPLETION_REASON, decideExperience, journeyStage } from "./experience-decision";
-import { contextMatch } from "./context-engine";
+import { contextConfidence, contextMatch, contextState } from "./context-engine";
+import { matchById } from "@/data/psk-data";
 import type {
   Decision,
   DemoPath,
@@ -71,6 +72,16 @@ export type SessionState = {
   previousStage: JourneyStage | null;
   /** Last market an outcome was selected from. */
   lastSelectedMarket: string | null;
+  /** Last market group the customer opened/expanded on a match page. */
+  lastViewedMarket: string | null;
+  /** Event the session was anchored on before the current one. */
+  previousMatchId: string | null;
+  /** The customer clearly changed task (opened a different event). */
+  contextSwitched: boolean;
+  /** The customer came back to an event already seen in this session. */
+  contextRestored: boolean;
+  /** Active journey context cleared after the customer chose Done. */
+  contextCleared: boolean;
   /** Measured browser timings, filled from the Performance API. */
   perf: PerfState;
 };
@@ -95,6 +106,7 @@ export type SessionAction =
   | { type: "perf"; patch: Partial<PerfState> }
   | { type: "viewMatch"; matchId: string }
   | { type: "setMarketTier"; matchId: string; tier: MarketTier }
+  | { type: "viewMarket"; marketName: string }
   | { type: "searchContext"; context: SearchContext | null }
   | { type: "intent"; intent: SessionIntent | null; resolved: boolean }
   | { type: "betslipEngaged" }
@@ -145,6 +157,11 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     exited: false,
     previousStage: null,
     lastSelectedMarket: null,
+    lastViewedMarket: null,
+    previousMatchId: null,
+    contextSwitched: false,
+    contextRestored: false,
+    contextCleared: false,
   };
 }
 
@@ -304,14 +321,36 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "beginTransaction":
       return { ...state, transactionStarted: true, betslipEngaged: true };
     case "exit":
-      return state.exited ? state : { ...state, exited: true };
+      // Task complete — PSK lets go of the active journey context.
+      return state.exited
+        ? state
+        : {
+            ...state,
+            exited: true,
+            contextCleared: true,
+            contextSwitched: false,
+            contextRestored: false,
+            searchContext: null,
+            intent: null,
+            intentResolved: false,
+            lastViewedMatchId: null,
+            lastViewedMarket: null,
+            lastSelectedMarket: null,
+            previousMatchId: null,
+          };
     case "stage":
       return state.previousStage === action.stage ? state : { ...state, previousStage: action.stage };
     case "perf":
       return { ...state, perf: { ...state.perf, ...action.patch } };
-    case "viewMatch":
+    case "viewMatch": {
+      if (state.lastViewedMatchId === action.matchId)
+        return state.contextSwitched ? { ...state, contextSwitched: false } : state;
+      const switched = !!state.lastViewedMatchId && state.lastViewedMatchId !== action.matchId;
       return {
         ...state,
+        previousMatchId: switched ? state.lastViewedMatchId : state.previousMatchId,
+        contextSwitched: switched,
+        contextRestored: state.viewedMatches.includes(action.matchId),
         lastViewedMatchId: action.matchId,
         viewedMatches: [
           action.matchId,
@@ -321,6 +360,11 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
           ? { ...state.searchContext, matchId: action.matchId }
           : state.searchContext,
       };
+    }
+    case "viewMarket":
+      return state.lastViewedMarket === action.marketName
+        ? state
+        : { ...state, lastViewedMarket: action.marketName };
     case "setMarketTier":
       return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
     case "searchContext":
@@ -350,6 +394,11 @@ export type DerivedSession = {
   context: SessionContextModel;
 };
 
+function matchLabel(id: string) {
+  const m = matchById(id);
+  return m ? `${m.home} - ${m.away}` : null;
+}
+
 export function totalOdds(state: SessionState) {
   return state.selections.reduce((acc, s) => acc * s.odds, 1);
 }
@@ -365,11 +414,23 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
   const odds = totalOdds(state);
   const friction = frictionScore(state);
   const gate = evaluateGate(state.stake, friction);
-  const focus = contextMatch({
+  const focus = state.contextCleared
+    ? undefined
+    : contextMatch({
     interest: state.interest,
     viewedMatches: state.viewedMatches,
     lastViewedMatchId: state.lastViewedMatchId,
-    searchContext: state.searchContext,
+        searchContext: state.searchContext,
+      });
+  const previousEvent = state.previousMatchId
+    ? matchLabel(state.previousMatchId)
+    : null;
+  const ctxConfidence = contextConfidence({
+    focus,
+    interest: state.interest,
+    searchMatched: !!state.searchContext?.matchId && state.searchContext.matchId === focus?.id,
+    selections: state.selections.length,
+    returning: !!focus && state.viewedMatches.filter((id) => id === focus.id).length > 0,
   });
   const confidence = state.intent?.confidence ?? 0;
   const stage = journeyStage({
@@ -397,7 +458,7 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
     corrected: !!state.searchContext?.corrected,
     intentConfidence: confidence,
     hasContext: !!focus,
-    returning: !!focus && state.viewedMatches.includes(focus.id),
+    returning: !!focus && state.contextRestored && !state.contextSwitched,
     activeSearchResults: !!state.searchContext && state.intentResolved,
   });
 
@@ -441,8 +502,19 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
       activeEvent: focus ? `${focus.home} - ${focus.away}` : null,
       activeCompetition: focus?.competition ?? null,
       activeSearch: state.searchContext?.query ?? null,
-      lastViewedEvent: state.lastViewedMatchId,
+      lastViewedEvent: state.lastViewedMatchId ? matchLabel(state.lastViewedMatchId) : null,
+      lastViewedMarket: state.lastViewedMarket,
       lastSelectedMarket: state.lastSelectedMarket,
+      previousEvent,
+      contextConfidence: ctxConfidence,
+      contextSwitched: state.contextSwitched,
+      contextState: contextState({
+        cleared: state.contextCleared,
+        switched: state.contextSwitched,
+        restored: state.contextRestored,
+        hasFocus: !!focus,
+        viewedCount: state.viewedMatches.length,
+      }),
       frictionLevel: frictionLevel(friction),
       responsibleGate: gate.state,
       experienceDecision: decision,

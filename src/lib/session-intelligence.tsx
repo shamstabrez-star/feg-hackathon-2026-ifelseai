@@ -205,6 +205,7 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     setBetslip: (open) => dispatch({ type: "setBetslip", open }),
     viewMatch: (matchId) => dispatch({ type: "viewMatch", matchId }),
     setMarketTier: (matchId, tier) => dispatch({ type: "setMarketTier", matchId, tier }),
+    viewMarket: (marketName) => dispatch({ type: "viewMarket", marketName }),
     setSearchContext: (context) => dispatch({ type: "searchContext", context }),
     setIntent: (intent, resolved) => dispatch({ type: "intent", intent, resolved }),
     beginTransaction: () => dispatch({ type: "beginTransaction" }),
