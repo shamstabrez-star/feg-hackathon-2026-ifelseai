@@ -43,61 +43,6 @@ import type {
 
 export type { Selection, Placement, TraceEvent, FrictionSignal, GateState, Decision, DemoPath } from "@/core";
 
-type Ctx = {
-  state: SessionState;
-  log: (
-    kind: EventKind,
-    label: string,
-    detail?: string,
-    interest?: string[],
-    meta?: Record<string, string | number>,
-  ) => void;
-  toggleSelection: (match: Match, market: Market, outcome: Outcome) => void;
-  removeSelection: (key: string) => void;
-  setStake: (stake: number) => void;
-  friction: (label: string, amount?: number) => void;
-  place: () => Placement | null;
-  setTrace: (open: boolean) => void;
-  setBetslip: (open: boolean) => void;
-  viewMatch: (matchId: string) => void;
-  setMarketTier: (matchId: string, tier: MarketTier) => void;
-  setSearchContext: (context: SearchContext | null) => void;
-  /** Resolved session intent — plain label plus prototype confidence. */
-  setIntent: (intent: SessionIntent | null, resolved: boolean) => void;
-  /** Confirm pressed — the transaction stage begins. */
-  beginTransaction: () => void;
-  /** Done pressed after a completed journey — the session exits. */
-  exitSession: () => void;
-  /** Records a real browser measurement; never used for invented values. */
-  measure: (patch: { searchMs?: number; interactionMs?: number }) => void;
-  resetSession: (path?: DemoPath) => void;
-  runDemoPath: (path: Exclude<DemoPath, "none">) => void;
-  totalOdds: number;
-  potentialReturn: number;
-  intelligence: {
-    sessionRef: string;
-    topInterest: string[];
-    engagement: Engagement;
-    frictionScore: number;
-    frictionSignals: FrictionSignal[];
-    searches: number;
-    interactions: number;
-    sessionSeconds: number;
-    decision: Decision;
-    decisionWhy: string;
-    journeyStage: JourneyStage;
-    frictionLevel: FrictionLevel;
-  };
-  /** The single privacy-safe session context object (judge-facing only). */
-  sessionContext: SessionContextModel;
-  responsibleGate: { state: GateState; reason: string; pass: boolean };
-  /** Live Challenge 1 business metrics, measured in this session. */
-  businessMetrics: EvidenceItem[];
-  /** Measured browser performance values (never fabricated). */
-  performanceMetrics: EvidenceItem[];
-};
-
-const SessionContext = createContext<Ctx | null>(null);
 
 export function SessionIntelligenceProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(sessionReducer, undefined, () => makeInitialSession());
