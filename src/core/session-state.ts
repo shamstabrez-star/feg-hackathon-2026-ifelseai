@@ -373,8 +373,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "perf":
       return { ...state, perf: { ...state.perf, ...action.patch } };
     case "viewMatch": {
+      // Re-reaching the same event still counts as finding the target, so any
+      // strain picked up since then is released.
       if (state.lastViewedMatchId === action.matchId)
-        return state.contextSwitched ? { ...state, contextSwitched: false } : state;
+        return { ...state, contextSwitched: false, targetDiscovered: true };
       const switched = !!state.lastViewedMatchId && state.lastViewedMatchId !== action.matchId;
       return {
         ...state,
