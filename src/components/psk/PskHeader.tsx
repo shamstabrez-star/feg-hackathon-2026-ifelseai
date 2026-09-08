@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { Bell, EyeOff, Moon, User } from "lucide-react";
+import { Bell, EyeOff, Moon, Search, User } from "lucide-react";
 import pskLogo from "@/assets/psk-logo.svg.asset.json";
 import { cn } from "@/lib/utils";
 
@@ -78,7 +78,13 @@ export const subNav = [
   "Shops",
 ];
 
-export function PskSubNav({ className }: { className?: string }) {
+export function PskSubNav({
+  className,
+  onSearch,
+}: {
+  className?: string;
+  onSearch?: () => void;
+}) {
   return (
     <div className={cn("bg-subnav", className)}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-5">
@@ -92,10 +98,20 @@ export function PskSubNav({ className }: { className?: string }) {
             </span>
           ))}
         </nav>
+        <div className="flex shrink-0 items-center gap-1">
+        <button
+          onClick={onSearch}
+          aria-label="Search matches"
+          className="flex items-center gap-2 rounded-md px-3 py-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground"
+        >
+          <Search className="h-4 w-4" />
+          <span className="hidden sm:inline">Search</span>
+        </button>
         <button className="flex shrink-0 items-center gap-2 rounded-md px-3 py-1.5 text-[13px] font-semibold text-muted-foreground hover:text-foreground">
           <Moon className="h-4 w-4" />
           DARK
         </button>
+        </div>
       </div>
     </div>
   );
