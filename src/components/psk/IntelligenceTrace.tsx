@@ -126,12 +126,16 @@ export function IntelligenceTrace() {
 
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 sm:right-auto sm:bottom-3 sm:left-3 sm:w-[22rem]">
+    <section
+      aria-label="PSK Intelligence judge panel"
+      className="pointer-events-none fixed inset-x-0 bottom-0 z-40 sm:right-auto sm:bottom-3 sm:left-3 sm:w-[22rem]"
+    >
       <div className="pointer-events-auto overflow-hidden rounded-t-xl border border-border bg-popover/95 shadow-xl backdrop-blur sm:rounded-md">
         <button
           onClick={() => setTrace(!state.traceOpen)}
-          className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 text-left"
+          className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-expanded={state.traceOpen}
+          aria-controls="psk-intelligence-panel"
         >
           <Activity className="h-4 w-4 shrink-0 text-primary" aria-hidden="true" />
           <span className="min-w-0 truncate text-xs font-bold">
@@ -148,10 +152,16 @@ export function IntelligenceTrace() {
         </button>
 
         {state.traceOpen ? (
-          <div className="max-h-[70vh] overflow-y-auto border-t border-border p-3 sm:max-h-[60vh]">
-            <p className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase">
+          <div
+            id="psk-intelligence-panel"
+            className="max-h-[70vh] overflow-y-auto border-t border-border p-3 sm:max-h-[60vh]"
+          >
+            <h2
+              id="psk-live-session"
+              className="text-[10px] font-bold tracking-wide text-muted-foreground uppercase"
+            >
               Live session
-            </p>
+            </h2>
             <p className="text-[10px] text-muted-foreground">Live prototype session signal</p>
             {state.exited ? (
               <div className="mt-2 rounded-sm border border-emerald-500/40 bg-surface-2 p-2">
@@ -171,7 +181,7 @@ export function IntelligenceTrace() {
                 </p>
               </div>
             ) : null}
-            <div className="mt-2 grid grid-cols-2 gap-2">
+            <div className="mt-2 grid grid-cols-2 gap-2" aria-labelledby="psk-live-session">
               <Stat label="Session" value={mounted ? intelligence.sessionRef : "—"} />
               <Stat
                 label="Intent"
@@ -278,19 +288,19 @@ export function IntelligenceTrace() {
             <div className="mt-1 flex flex-wrap gap-2">
               <button
                 onClick={() => runDemoPath("success")}
-                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface"
+                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Demo: successful flow
               </button>
               <button
                 onClick={() => runDemoPath("friction")}
-                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface"
+                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Demo: friction flow
               </button>
               <button
                 onClick={() => resetSession("none")}
-                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface"
+                className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
               >
                 Reset session
               </button>
@@ -315,9 +325,9 @@ export function IntelligenceTrace() {
               </div>
             ) : null}
 
-            <details className="mt-3 rounded-sm bg-surface-2/60 p-2">
-              <summary className="cursor-pointer text-[11px] font-bold">
-                Evidence (judges)
+            <details className="mt-3 rounded-sm bg-surface-2/60 p-2" aria-label="Dataset evidence section">
+              <summary className="cursor-pointer text-[11px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                Evidence — derived from supplied challenge dataset
               </summary>
               <p className="mt-1 text-[10px] text-muted-foreground">
                 Prototype uses supplied challenge datasets for baseline evidence. Production
@@ -376,9 +386,9 @@ export function IntelligenceTrace() {
               />
             </details>
 
-            <details className="mt-2 rounded-sm bg-surface-2/60 p-2">
-              <summary className="cursor-pointer text-[11px] font-bold">
-                Production target
+            <details className="mt-2 rounded-sm bg-surface-2/60 p-2" aria-label="Production target architecture section">
+              <summary className="cursor-pointer text-[11px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
+                Production target architecture — not connected
               </summary>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Production target architecture — not connected in this prototype
@@ -462,6 +472,6 @@ export function IntelligenceTrace() {
           </div>
         ) : null}
       </div>
-    </div>
+    </section>
   );
 }
