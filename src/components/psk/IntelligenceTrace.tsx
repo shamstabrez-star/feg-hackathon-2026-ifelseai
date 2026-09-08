@@ -159,8 +159,15 @@ export function IntelligenceTrace() {
                   Session
                 </p>
                 <p className="text-sm font-bold text-emerald-400">CLOSED</p>
+                <ul className="mt-1 space-y-0.5 text-[11px]">
+                  <li>Journey: COMPLETION → EXIT</li>
+                  <li>Friction: LOW</li>
+                  <li>Decision: NONE</li>
+                  <li>Responsible gate: PASS</li>
+                  <li>Outcome: Journey completed successfully</li>
+                </ul>
                 <p className="mt-0.5 text-[11px] text-muted-foreground">
-                  Journey completed successfully — intelligence has stopped intervening.
+                  No further intervention required.
                 </p>
               </div>
             ) : null}
@@ -206,11 +213,11 @@ export function IntelligenceTrace() {
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               Prototype responsible-control state. Responsible controls are evaluated independently
-              of optimisation decisions; this is not a production risk assessment.
+              of experience optimisation. This does not replace FEG production controls.
             </p>
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Why
+                Why this decision
               </p>
               <p className="mt-0.5 break-words text-[11px]">{intelligence.decisionWhy}</p>
             </div>
@@ -252,7 +259,10 @@ export function IntelligenceTrace() {
             ) : null}
 
 
-            <div className="mt-3 flex flex-wrap gap-2">
+            <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+              Prototype demo controls
+            </p>
+            <div className="mt-1 flex flex-wrap gap-2">
               <button
                 onClick={() => runDemoPath("success")}
                 className="rounded-sm bg-surface-2 px-2 py-1 text-[11px] font-semibold hover:bg-surface"
@@ -294,7 +304,7 @@ export function IntelligenceTrace() {
 
             <details className="mt-3 rounded-sm bg-surface-2/60 p-2">
               <summary className="cursor-pointer text-[11px] font-bold">
-                Dataset evidence (judges)
+                Evidence (judges)
               </summary>
               <p className="mt-1 text-[10px] text-muted-foreground">
                 Prototype uses supplied challenge datasets for baseline evidence. Production
@@ -355,15 +365,15 @@ export function IntelligenceTrace() {
 
             <details className="mt-2 rounded-sm bg-surface-2/60 p-2">
               <summary className="cursor-pointer text-[11px] font-bold">
-                Production architecture
+                Production target
               </summary>
               <p className="mt-1 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                 Production target architecture — not connected in this prototype
               </p>
               <ol className="mt-1 space-y-0.5 text-[11px]">
                 {[
-                  ["PSK user events", "Web / app interaction events"],
-                  ["Event stream", "Kafka topics behind NGINX-fronted API services"],
+                  ["PSK interaction events", "Web / app interaction events"],
+                  ["Kafka / event stream", "Kafka topics behind NGINX-fronted API services"],
                   ["Session Engine", "Short-lived session state (Redis)"],
                   ["Intent + Context + Friction", "Elasticsearch-backed entity resolution"],
                   ["Responsible Gate", "Evaluated independently of optimisation"],
@@ -381,16 +391,30 @@ export function IntelligenceTrace() {
                   </li>
                 ))}
               </ol>
+              <ul className="mt-1 space-y-0.5 text-[10px] text-muted-foreground">
+                <li>
+                  <span className="font-semibold">Frontend:</span> Vue.js
+                </li>
+                <li>
+                  <span className="font-semibold">Services:</span> Java / Python / .NET
+                </li>
+                <li>
+                  <span className="font-semibold">Integration:</span> NGINX / Kafka / RabbitMQ
+                </li>
+                <li>
+                  <span className="font-semibold">Data:</span> PostgreSQL / Redis / MongoDB /
+                  Elasticsearch
+                </li>
+              </ul>
               <p className="mt-1 text-[10px] text-muted-foreground">
-                Kafka, NGINX, Redis, PostgreSQL and Elasticsearch are named as the target FEG
-                deployment path. None of these production integrations are currently connected —
-                this prototype runs entirely in the browser session.
+                Prototype implementation is simplified; production integration would connect these
+                intelligence services to the PSK event architecture.
               </p>
             </details>
 
             <div className="mt-3">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Session events <span className="normal-case">(this prototype interaction)</span>
+                Session trace <span className="normal-case">(this prototype interaction)</span>
               </p>
               <p className="text-[10px] text-muted-foreground">
                 Generated by your actions just now; timings are measured from session start.

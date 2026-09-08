@@ -35,15 +35,14 @@ export type DecisionInput = {
   activeSearchResults: boolean;
 };
 
-export const COMPLETION_REASON =
-  "Journey completed successfully. No additional intervention required.";
+export const COMPLETION_REASON = "Journey completed successfully.";
 
 /** Concise, judge-readable explanations for each decision path. */
 export const DECISION_WHY = {
   completed: COMPLETION_REASON,
   silence: "Responsible gate active — interventions suppressed.",
   adapt: "Responsible adaptation — existing choice set reduced.",
-  simplify: "Repeated unsuccessful discovery → choice set narrowed.",
+  simplify: "Repeated unsuccessful discovery → narrow the existing choice set.",
   discover: "Search intent detected → prioritised relevant existing content.",
   browsing: "Broad browsing without a clear target → surface relevant events.",
   context: "Active event context → continue current journey.",
