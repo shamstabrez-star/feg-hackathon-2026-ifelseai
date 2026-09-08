@@ -46,11 +46,23 @@ function band(score: number): FrictionLevel {
   return "LOW";
 }
 
+/** Signals that belong to discovery, so they are released on success and
+ *  never double-counted against the search counters below. */
+function isDiscoverySignal(label: string) {
+  const l = label.toLowerCase();
+  return (
+    l.includes("search") || l.includes("scroll") || l.includes("dwell") || l.includes("market")
+  );
+}
+
 export function evaluateFriction(input: FrictionInput): FrictionResult {
   if (input.exited || input.hasPlacement)
     return { score: 0, level: "LOW", reason: FRICTION_REASONS.completed };
 
-  const seeded = input.frictionSignals.reduce((acc, s) => acc + s.weight, 0);
+  const seeded = input.frictionSignals
+    .filter((s) => !isDiscoverySignal(s.label))
+    .reduce((acc, s) => acc + s.weight, 0);
+
 
   // One failed search is never strong evidence; repeats are.
   const emptyStrain = input.emptySearches >= 2 ? (input.emptySearches - 1) * 12 : 0;
