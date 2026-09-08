@@ -81,23 +81,27 @@ function Page() {
           <p className="mt-4 text-sm text-muted-foreground">
             No games match that search. Try a shorter word.
           </p>
-        ) : (
+        ) : debounced ? (
+          // Search results stay completely still: a result list is never moved.
           <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
             {shown.map((game) => (
               <li key={game.id}>
-                <button
-                  type="button"
-                  onClick={() => productSelect(game.name)}
-                  className="min-h-11 w-full rounded-sm bg-surface-2 px-3 py-3 text-left text-sm font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-                >
-                  <span className="block truncate">{game.name}</span>
-                  <span className="block truncate text-[11px] font-normal text-muted-foreground">
-                    {game.group}
-                  </span>
-                </button>
+                <GameCard name={game.name} group={game.group} onOpen={productSelect} />
               </li>
             ))}
           </ul>
+        ) : (
+          <div className="mt-4 space-y-6">
+            {railGroups.map((group) => (
+              <ContentRail key={group.title} title={group.title} label={`${group.title} games`}>
+                {group.games.map((game) => (
+                  <div key={game.id} data-rail-item className="w-40 shrink-0 snap-start sm:w-48">
+                    <GameCard name={game.name} group={game.group} onOpen={productSelect} />
+                  </div>
+                ))}
+              </ContentRail>
+            ))}
+          </div>
         )}
       </section>
     </AppShell>
