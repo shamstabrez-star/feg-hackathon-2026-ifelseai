@@ -84,8 +84,17 @@ function JourneyFlow() {
 
 /** Judge-facing, unobtrusive trace of the live session intelligence model. */
 export function IntelligenceTrace() {
-  const { state, setTrace, intelligence, responsibleGate, businessMetrics, performanceMetrics, runDemoPath, resetSession } =
-    useSession();
+  const {
+    state,
+    setTrace,
+    intelligence,
+    responsibleGate,
+    sessionContext,
+    businessMetrics,
+    performanceMetrics,
+    runDemoPath,
+    resetSession,
+  } = useSession();
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -106,23 +115,13 @@ export function IntelligenceTrace() {
     lastViewedMatchId: state.lastViewedMatchId,
     searchContext: state.searchContext,
   });
-  const intent = state.searchContext
-    ? `Find ${state.searchContext.corrected ?? state.searchContext.query}`
-    : focus
-      ? `Follow ${focus.home} - ${focus.away}`
-      : "Browse the offer";
   const context = focus
     ? `${focus.competition} · ${focus.live ? "Live" : "Upcoming"}`
     : "Football · Offer";
-  const frictionLabel =
-    intelligence.frictionScore >= 60 ? "High" : intelligence.frictionScore >= 30 ? "Elevated" : "Low";
-  const outcome = completed
-    ? "Bet accepted"
-    : state.selections.length
-      ? "Selection added"
-      : state.viewedMatches.length
-        ? "Match explored"
-        : "Session active";
+  const journey = sessionContext.previousStage
+    ? `${sessionContext.previousStage.toUpperCase()} → ${sessionContext.journeyStage.toUpperCase()}`
+    : sessionContext.journeyStage.toUpperCase();
+
 
   return (
     <div className="pointer-events-none fixed inset-x-0 bottom-0 z-40 sm:right-auto sm:bottom-3 sm:left-3 sm:w-[22rem]">
@@ -153,13 +152,16 @@ export function IntelligenceTrace() {
             </p>
             <div className="mt-2 grid grid-cols-2 gap-2">
               <Stat label="Session" value={mounted ? intelligence.sessionRef : "—"} />
-              <Stat label="Intent" value={intent} />
+              <Stat
+                label="Intent"
+                value={`${sessionContext.intent} · ${sessionContext.intentConfidence}`}
+              />
               <Stat label="Context" value={context} />
-              <Stat label="Journey stage" value={intelligence.journeyStage} />
-              <Stat label="Friction" value={frictionLabel} />
+              <Stat label="Journey" value={journey} />
+              <Stat label="Friction" value={sessionContext.frictionLevel} />
               <Stat label="Decision" value={intelligence.decision} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
-              <Stat label="Outcome" value={outcome} />
+              <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
             {completed ? (
               <div className="mt-2 rounded-sm bg-surface-2 p-2">

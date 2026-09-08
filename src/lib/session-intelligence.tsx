@@ -24,12 +24,15 @@ import type {
   DemoPath,
   Engagement,
   EventKind,
+  FrictionLevel,
   FrictionSignal,
   GateState,
   JourneyStage,
   MarketTier,
   Placement,
   SearchContext,
+  SessionContextModel,
+  SessionIntent,
   Selection,
 } from "@/core";
 
@@ -62,6 +65,12 @@ type Ctx = {
   viewMatch: (matchId: string) => void;
   setMarketTier: (matchId: string, tier: MarketTier) => void;
   setSearchContext: (context: SearchContext | null) => void;
+  /** Resolved session intent — plain label plus prototype confidence. */
+  setIntent: (intent: SessionIntent | null, resolved: boolean) => void;
+  /** Confirm pressed — the transaction stage begins. */
+  beginTransaction: () => void;
+  /** Done pressed after a completed journey — the session exits. */
+  exitSession: () => void;
   /** Records a real browser measurement; never used for invented values. */
   measure: (patch: { searchMs?: number; interactionMs?: number }) => void;
   resetSession: (path?: DemoPath) => void;
@@ -80,7 +89,10 @@ type Ctx = {
     decision: Decision;
     decisionWhy: string;
     journeyStage: JourneyStage;
+    frictionLevel: FrictionLevel;
   };
+  /** The single privacy-safe session context object (judge-facing only). */
+  sessionContext: SessionContextModel;
   responsibleGate: { state: GateState; reason: string; pass: boolean };
   /** Live Challenge 1 business metrics, measured in this session. */
   businessMetrics: EvidenceItem[];
@@ -93,6 +105,7 @@ const SessionContext = createContext<Ctx | null>(null);
 export function SessionIntelligenceProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(sessionReducer, undefined, () => makeInitialSession());
   const lastDecision = useRef<Decision | null>(null);
+  const lastStage = useRef<JourneyStage | null>(null);
 
   const log = useCallback<Ctx["log"]>(
     (kind, label, detail, interest, meta) =>
@@ -171,6 +184,16 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [derived.decision, derived.gate.state]);
 
+  // Journey stage transitions follow real interactions only. Recording the
+  // previous stage keeps the trace readable (e.g. "context → exploration").
+  useEffect(() => {
+    if (lastStage.current === derived.stage) return;
+    const from = lastStage.current;
+    lastStage.current = derived.stage;
+    if (from) dispatch({ type: "stage", stage: from });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [derived.stage]);
+
   const place = useCallback((): Placement | null => {
     if (state.stake > 100) {
       dispatch({
@@ -240,6 +263,9 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
     viewMatch: (matchId) => dispatch({ type: "viewMatch", matchId }),
     setMarketTier: (matchId, tier) => dispatch({ type: "setMarketTier", matchId, tier }),
     setSearchContext: (context) => dispatch({ type: "searchContext", context }),
+    setIntent: (intent, resolved) => dispatch({ type: "intent", intent, resolved }),
+    beginTransaction: () => dispatch({ type: "beginTransaction" }),
+    exitSession: () => dispatch({ type: "exit" }),
     measure,
     resetSession,
     runDemoPath,
@@ -257,7 +283,9 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
       decision: derived.decision,
       decisionWhy: derived.decisionWhy,
       journeyStage: derived.stage,
+      frictionLevel: derived.frictionLevel,
     },
+    sessionContext: derived.context,
     responsibleGate: {
       state: derived.gate.state,
       reason: derived.gate.reason,

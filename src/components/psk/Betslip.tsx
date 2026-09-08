@@ -67,6 +67,8 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
     place,
     responsibleGate,
     friction,
+    beginTransaction,
+    exitSession,
   } = useSession();
   const [confirming, setConfirming] = useState(false);
   const [placing, setPlacing] = useState(false);
@@ -78,6 +80,7 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
         placement={done}
         onDone={() => {
           setDone(null);
+          exitSession();
           onClose?.();
         }}
       />
@@ -190,6 +193,7 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
               className="min-h-11 flex-1 rounded-md bg-primary py-2 text-sm font-bold text-primary-foreground transition-colors hover:bg-primary/90 disabled:opacity-50"
               disabled={!responsibleGate.pass}
               onClick={() => {
+                beginTransaction();
                 const placement = place();
                 setConfirming(false);
                 if (!placement) return;
