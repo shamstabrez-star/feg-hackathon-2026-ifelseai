@@ -106,6 +106,11 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
                 No matches found. Try a team, competition or player name.
               </p>
             ) : null}
+            {!typing && intent.corrected && results.length ? (
+              <p className="pb-2 text-xs text-muted-foreground">
+                Showing results for <span className="font-semibold text-foreground">{intent.corrected}</span>
+              </p>
+            ) : null}
             <ul>
               {!typing &&
                 results.map(({ match, reason }) => (
