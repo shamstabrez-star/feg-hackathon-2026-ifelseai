@@ -403,7 +403,13 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
     case "setMarketTier":
       return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
     case "searchContext":
-      return { ...state, searchContext: action.context };
+      // A search that hands off to an event is a found target: strain picked
+      // up during the unsuccessful attempts is released.
+      return {
+        ...state,
+        searchContext: action.context,
+        targetDiscovered: action.context ? true : state.targetDiscovered,
+      };
     default:
       return state;
   }
