@@ -1,12 +1,16 @@
+import { useEffect, useState } from "react";
 import { Activity, ChevronDown } from "lucide-react";
 import { useSession } from "@/lib/session-intelligence";
 import {
   datasetEvidence,
   datasetsAvailable,
+  decisionEvidence,
   downstreamValidation,
+  evidenceById,
+  evidenceCategories,
   expectedDatasets,
+  journeyFlow,
   missingDatasets,
-
   illustrativeEvidence,
   type EvidenceItem,
 } from "@/data/evidence";
@@ -20,6 +24,25 @@ function Stat({ label, value, tone }: { label: string; value: string; tone?: str
   );
 }
 
+function EvidenceRow({ item }: { item: EvidenceItem }) {
+  return (
+    <li className="border-l border-border pl-2 text-[11px]">
+      <span className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+        <span className="min-w-0 break-words">{item.label}</span>
+        <span className="shrink-0 text-right font-semibold">{item.value}</span>
+      </span>
+      <span className="mt-0.5 block break-words text-[10px] text-muted-foreground">
+        {item.source === "illustrative" ? "Illustrative prototype assumption" : item.note}
+      </span>
+      {item.challenge1 ? (
+        <span className="mt-0.5 block break-words text-[10px] text-primary">
+          C1: {item.challenge1}
+        </span>
+      ) : null}
+    </li>
+  );
+}
+
 function EvidenceList({ title, items, tag }: { title: string; items: EvidenceItem[]; tag: string }) {
   if (!items.length) return null;
   return (
@@ -27,14 +50,30 @@ function EvidenceList({ title, items, tag }: { title: string; items: EvidenceIte
       <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
         {title} <span className="ml-1 rounded-sm bg-surface-2 px-1 py-0.5 normal-case">{tag}</span>
       </p>
-      <ul className="mt-1 space-y-1">
+      <ul className="mt-1 space-y-1.5">
         {items.map((item) => (
-          <li key={item.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 text-[11px]">
-            <span className="min-w-0">
-              <span className="block truncate">{item.label}</span>
-              <span className="block truncate text-muted-foreground">{item.note}</span>
+          <EvidenceRow key={item.id} item={item} />
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+function JourneyFlow() {
+  return (
+    <div className="mt-3">
+      <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+        Aggregated journey flow <span className="normal-case">(dataset)</span>
+      </p>
+      <ul className="mt-1 space-y-1">
+        {journeyFlow.map((s) => (
+          <li key={s.id} className="rounded-sm bg-surface-2 px-2 py-1 text-[11px]">
+            <span className="block font-bold">{s.stage}</span>
+            <span
+              className={`block break-words ${s.supported ? "text-foreground" : "text-muted-foreground"}`}
+            >
+              {s.value}
             </span>
-            <span className="shrink-0 font-semibold">{item.value}</span>
           </li>
         ))}
       </ul>
@@ -46,6 +85,11 @@ function EvidenceList({ title, items, tag }: { title: string; items: EvidenceIte
 export function IntelligenceTrace() {
   const { state, setTrace, intelligence, responsibleGate, businessMetrics, performanceMetrics, runDemoPath, resetSession } =
     useSession();
+
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  const cited = decisionEvidence[intelligence.decision];
 
   const gateTone =
     responsibleGate.state === "PASS"
@@ -64,7 +108,7 @@ export function IntelligenceTrace() {
         >
           <Activity className="h-4 w-4 shrink-0 text-primary" />
           <span className="min-w-0 truncate text-xs font-bold">
-            Intelligence trace · {intelligence.sessionRef}
+            Intelligence trace{mounted ? ` · ${intelligence.sessionRef}` : ""}
           </span>
           <ChevronDown
             className={`h-4 w-4 shrink-0 transition-transform ${state.traceOpen ? "rotate-180" : ""}`}
@@ -82,6 +126,28 @@ export function IntelligenceTrace() {
             <p className="mt-2 text-[11px] text-muted-foreground">
               Gate: {responsibleGate.reason}. Decision: {intelligence.decisionWhy}.
             </p>
+            {cited ? (
+              <div className="mt-2 rounded-sm bg-surface-2 p-2">
+                <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
+                  Reasoning for this decision
+                </p>
+                <p className="mt-0.5 break-words text-[11px]">{cited.reasoning}</p>
+                <ul className="mt-1 space-y-0.5">
+                  {cited.cites
+                    .map((id) => evidenceById.get(id))
+                    .filter((e): e is EvidenceItem => Boolean(e))
+                    .map((e) => (
+                      <li key={e.id} className="break-words text-[10px] text-muted-foreground">
+                        · {e.label}: <span className="font-semibold">{e.value}</span>
+                      </li>
+                    ))}
+                </ul>
+                <p className="mt-1 text-[10px] text-muted-foreground">
+                  Transparent prototype rules over live session state — no model inference.
+                </p>
+              </div>
+            ) : null}
+
 
             <div className="mt-3 flex flex-wrap gap-2">
               <button
@@ -139,14 +205,22 @@ export function IntelligenceTrace() {
 
               {datasetsAvailable ? (
                 <>
-                  <EvidenceList
-                    title="Challenge dataset aggregates"
-                    items={datasetEvidence}
-                    tag="dataset"
-                  />
-                  <p className="mt-1 text-[10px] text-muted-foreground">
-                    Anonymised cohort aggregates only. Not supplied to this prototype:{" "}
-                    {missingDatasets.join(", ")} — no figures are inferred for those sources.
+                  <JourneyFlow />
+                  {evidenceCategories.map((cat) => (
+                    <EvidenceList
+                      key={cat}
+                      title={cat}
+                      items={[...datasetEvidence, ...illustrativeEvidence].filter(
+                        (e) => e.category === cat,
+                      )}
+                      tag="dataset + illustrative"
+                    />
+                  ))}
+                  <p className="mt-2 text-[10px] text-muted-foreground">
+                    Anonymised cohort aggregates only — no PlayerID, session, token, transaction,
+                    betslip, fixture or URL values are read or shown. Not supplied to this
+                    prototype: {missingDatasets.join(", ")} — no figures are inferred for those
+                    sources. Casino figures appear only as evidence the architecture generalises.
                   </p>
                 </>
               ) : (
@@ -162,11 +236,6 @@ export function IntelligenceTrace() {
               )}
 
 
-              <EvidenceList
-                title="Prototype assumptions"
-                items={illustrativeEvidence}
-                tag="illustrative"
-              />
               <EvidenceList
                 title="Downstream validation"
                 items={downstreamValidation}
