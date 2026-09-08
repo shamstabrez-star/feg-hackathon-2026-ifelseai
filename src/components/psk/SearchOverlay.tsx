@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { Search, X } from "lucide-react";
-import { inferIntent } from "@/lib/intent";
+import { inferIntent } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 
 /** Kept for compatibility: tolerant match lookup used elsewhere. */

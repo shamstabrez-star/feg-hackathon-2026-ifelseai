@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
 import { matches } from "@/data/psk-data";
-import { categorise } from "@/lib/contextual";
+import { categorise } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
 
