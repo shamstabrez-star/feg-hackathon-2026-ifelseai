@@ -10,33 +10,154 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as CasinoRouteImport } from './routes/casino'
+import { Route as ForumRouteImport } from './routes/forum'
+import { Route as LiveRouteImport } from './routes/live'
+import { Route as LiveCasinoRouteImport } from './routes/live-casino'
+import { Route as LotoRouteImport } from './routes/loto'
+import { Route as PromoRouteImport } from './routes/promo'
+import { Route as PskArenaRouteImport } from './routes/psk-arena'
+import { Route as SwipeAndBetRouteImport } from './routes/swipe-and-bet'
+import { Route as VirtualsRouteImport } from './routes/virtuals'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const CasinoRoute = CasinoRouteImport.update({
+  id: '/casino',
+  path: '/casino',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForumRoute = ForumRouteImport.update({
+  id: '/forum',
+  path: '/forum',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveRoute = LiveRouteImport.update({
+  id: '/live',
+  path: '/live',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LiveCasinoRoute = LiveCasinoRouteImport.update({
+  id: '/live-casino',
+  path: '/live-casino',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const LotoRoute = LotoRouteImport.update({
+  id: '/loto',
+  path: '/loto',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PskArenaRoute = PskArenaRouteImport.update({
+  id: '/psk-arena',
+  path: '/psk-arena',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SwipeAndBetRoute = SwipeAndBetRouteImport.update({
+  id: '/swipe-and-bet',
+  path: '/swipe-and-bet',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const VirtualsRoute = VirtualsRouteImport.update({
+  id: '/virtuals',
+  path: '/virtuals',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/casino': typeof CasinoRoute
+  '/forum': typeof ForumRoute
+  '/live': typeof LiveRoute
+  '/live-casino': typeof LiveCasinoRoute
+  '/loto': typeof LotoRoute
+  '/promo': typeof PromoRoute
+  '/psk-arena': typeof PskArenaRoute
+  '/swipe-and-bet': typeof SwipeAndBetRoute
+  '/virtuals': typeof VirtualsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/casino': typeof CasinoRoute
+  '/forum': typeof ForumRoute
+  '/live': typeof LiveRoute
+  '/live-casino': typeof LiveCasinoRoute
+  '/loto': typeof LotoRoute
+  '/promo': typeof PromoRoute
+  '/psk-arena': typeof PskArenaRoute
+  '/swipe-and-bet': typeof SwipeAndBetRoute
+  '/virtuals': typeof VirtualsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/casino': typeof CasinoRoute
+  '/forum': typeof ForumRoute
+  '/live': typeof LiveRoute
+  '/live-casino': typeof LiveCasinoRoute
+  '/loto': typeof LotoRoute
+  '/promo': typeof PromoRoute
+  '/psk-arena': typeof PskArenaRoute
+  '/swipe-and-bet': typeof SwipeAndBetRoute
+  '/virtuals': typeof VirtualsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/casino'
+    | '/forum'
+    | '/live'
+    | '/live-casino'
+    | '/loto'
+    | '/promo'
+    | '/psk-arena'
+    | '/swipe-and-bet'
+    | '/virtuals'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/casino'
+    | '/forum'
+    | '/live'
+    | '/live-casino'
+    | '/loto'
+    | '/promo'
+    | '/psk-arena'
+    | '/swipe-and-bet'
+    | '/virtuals'
+  id:
+    | '__root__'
+    | '/'
+    | '/casino'
+    | '/forum'
+    | '/live'
+    | '/live-casino'
+    | '/loto'
+    | '/promo'
+    | '/psk-arena'
+    | '/swipe-and-bet'
+    | '/virtuals'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  CasinoRoute: typeof CasinoRoute
+  ForumRoute: typeof ForumRoute
+  LiveRoute: typeof LiveRoute
+  LiveCasinoRoute: typeof LiveCasinoRoute
+  LotoRoute: typeof LotoRoute
+  PromoRoute: typeof PromoRoute
+  PskArenaRoute: typeof PskArenaRoute
+  SwipeAndBetRoute: typeof SwipeAndBetRoute
+  VirtualsRoute: typeof VirtualsRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +169,83 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/casino': {
+      id: '/casino'
+      path: '/casino'
+      fullPath: '/casino'
+      preLoaderRoute: typeof CasinoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forum': {
+      id: '/forum'
+      path: '/forum'
+      fullPath: '/forum'
+      preLoaderRoute: typeof ForumRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live': {
+      id: '/live'
+      path: '/live'
+      fullPath: '/live'
+      preLoaderRoute: typeof LiveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/live-casino': {
+      id: '/live-casino'
+      path: '/live-casino'
+      fullPath: '/live-casino'
+      preLoaderRoute: typeof LiveCasinoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/loto': {
+      id: '/loto'
+      path: '/loto'
+      fullPath: '/loto'
+      preLoaderRoute: typeof LotoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/psk-arena': {
+      id: '/psk-arena'
+      path: '/psk-arena'
+      fullPath: '/psk-arena'
+      preLoaderRoute: typeof PskArenaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/swipe-and-bet': {
+      id: '/swipe-and-bet'
+      path: '/swipe-and-bet'
+      fullPath: '/swipe-and-bet'
+      preLoaderRoute: typeof SwipeAndBetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/virtuals': {
+      id: '/virtuals'
+      path: '/virtuals'
+      fullPath: '/virtuals'
+      preLoaderRoute: typeof VirtualsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  CasinoRoute: CasinoRoute,
+  ForumRoute: ForumRoute,
+  LiveRoute: LiveRoute,
+  LiveCasinoRoute: LiveCasinoRoute,
+  LotoRoute: LotoRoute,
+  PromoRoute: PromoRoute,
+  PskArenaRoute: PskArenaRoute,
+  SwipeAndBetRoute: SwipeAndBetRoute,
+  VirtualsRoute: VirtualsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
