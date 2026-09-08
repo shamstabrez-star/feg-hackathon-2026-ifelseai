@@ -15,7 +15,8 @@ export function SearchOverlay({ open, onClose }: { open: boolean; onClose: () =>
   const [typing, setTyping] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const navigate = useNavigate();
-  const { log } = useSession();
+  const { log, state, friction } = useSession();
+  const recentInterest = Object.keys(state.interest);
 
   useEffect(() => {
     if (open) inputRef.current?.focus();
