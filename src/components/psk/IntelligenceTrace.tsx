@@ -264,7 +264,7 @@ export function IntelligenceTrace() {
                 Gate: {responsibleGate.reason}. Decision: {intelligence.decisionWhy}.
               </p>
             )}
-            {cited ? (
+            {cited && sessionContext.activeProduct === "Sport" ? (
               <div className="mt-2 rounded-sm bg-surface-2 p-2">
                 <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
                   Reasoning for this decision
