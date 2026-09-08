@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
 import { matches } from "@/data/psk-data";
@@ -34,6 +34,15 @@ function Index() {
   const [category, setCategory] = useState<string>("all");
   const { toggleSelection, state, log } = useSession();
   const selectedKeys = new Set(state.selections.map((s) => s.key));
+
+  // Entering the Sports lobby is normal navigation; the engine only counts it
+  // when nothing was achieved on the event in between.
+  const loggedLobby = useRef(false);
+  useEffect(() => {
+    if (loggedLobby.current) return;
+    loggedLobby.current = true;
+    log("navigation", "Sports lobby");
+  }, [log]);
 
   const visible = matches.filter((m) => (filter === "LIVE" ? m.live : true));
 

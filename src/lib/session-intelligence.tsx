@@ -228,6 +228,8 @@ export function SessionIntelligenceProvider({ children }: { children: ReactNode 
       decisionWhy: derived.decisionWhy,
       journeyStage: derived.stage,
       frictionLevel: derived.frictionLevel,
+      frictionReason: derived.frictionReason,
+      experienceResponse: derived.experienceResponse,
     },
     sessionContext: derived.context,
     responsibleGate: {
