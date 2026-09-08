@@ -1,8 +1,30 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
+import { ContentRail } from "@/components/psk/ContentRail";
 import { useSession } from "@/lib/session-intelligence";
 import { casinoGames, searchCasinoGames } from "@/data/casino-games";
+
+function GameCard({
+  name,
+  group,
+  onOpen,
+}: {
+  name: string;
+  group: string;
+  onOpen: (name: string) => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={() => onOpen(name)}
+      className="min-h-11 w-full rounded-sm bg-surface-2 px-3 py-3 text-left text-sm font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+    >
+      <span className="block truncate">{name}</span>
+      <span className="block truncate text-[11px] font-normal text-muted-foreground">{group}</span>
+    </button>
+  );
+}
 
 export const Route = createFileRoute("/casino")({
   head: () => ({
