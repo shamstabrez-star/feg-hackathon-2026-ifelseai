@@ -67,6 +67,8 @@ export type Ctx = {
     decisionWhy: string;
     journeyStage: JourneyStage;
     frictionLevel: FrictionLevel;
+    frictionReason: string;
+    experienceResponse: string;
   };
   /** The single privacy-safe session context object (judge-facing only). */
   sessionContext: SessionContextModel;

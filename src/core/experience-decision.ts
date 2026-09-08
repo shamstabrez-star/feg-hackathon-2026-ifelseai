@@ -1,4 +1,5 @@
-import type { Decision, GateState, JourneyStage } from "./types";
+import { FRICTION_REASONS } from "./friction-engine";
+import type { Decision, FrictionLevel, GateState, JourneyStage } from "./types";
 
 /**
  * Layer 8 — Experience decision.
@@ -10,6 +11,12 @@ import type { Decision, GateState, JourneyStage } from "./types";
 export type DecisionInput = {
   gate: GateState;
   friction: number;
+  /** Banded friction state from the friction engine. */
+  frictionLevel: FrictionLevel;
+  /** Plain-language reason behind that state. */
+  frictionReason: string;
+  /** A plausible target was reached (event opened / selection made). */
+  targetDiscovered: boolean;
   emptySearches: number;
   searches: number;
   interactions: number;
@@ -37,8 +44,22 @@ export function decideExperience(input: DecisionInput): { decision: Decision; wh
     return { decision: "NONE", why: COMPLETION_REASON };
   if (input.gate === "SILENCE")
     return { decision: "NONE", why: "Responsible gate suppressed interventions" };
-  if (input.gate === "ADAPT" || input.friction >= 20 || input.emptySearches > 0)
-    return { decision: "SIMPLIFY", why: "Friction signals suggest reducing choice" };
+  if (input.gate === "ADAPT")
+    return { decision: "SIMPLIFY", why: "Responsible adaptation — reduce choice" };
+  // Strong repeated evidence of struggling: make the known target easier to
+  // reach. Never a prompt, never a promotion — ordering only.
+  if (input.frictionLevel === "HIGH")
+    return { decision: "SIMPLIFY", why: `${input.frictionReason} — lead with the known target` };
+  if (input.frictionLevel === "MEDIUM") {
+    const strongTarget =
+      input.hasContext || (input.corrected && input.intentConfidence >= 0.6);
+    return strongTarget
+      ? { decision: "DISCOVER", why: `${input.frictionReason} — surface the relevant event` }
+      : { decision: "SIMPLIFY", why: `${input.frictionReason} — prioritise relevant results` };
+  }
+  // Recovery: the target was found, so the session is no longer labelled.
+  if (input.targetDiscovered && input.hasContext && input.selectionCount === 0)
+    return { decision: "CONTINUE", why: `${FRICTION_REASONS.discovered} — keep the journey moving` };
   if (input.corrected && input.intentConfidence >= 0.6)
     return { decision: "SIMPLIFY", why: "Query resolved to a clear target — lead with it" };
   if (input.selectionCount > 0)

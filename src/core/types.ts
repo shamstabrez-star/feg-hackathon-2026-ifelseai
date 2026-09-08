@@ -147,6 +147,10 @@ export type SessionContextModel = {
   /** Lifecycle of the active context, for the judge trace only. */
   contextState: ContextState;
   frictionLevel: FrictionLevel;
+  /** Plain-language explanation of the friction state, judge-facing only. */
+  frictionReason: string;
+  /** How the experience responds to the current decision, judge-facing only. */
+  experienceResponse: string;
   responsibleGate: GateState;
   experienceDecision: Decision;
   outcome: string;

@@ -1,4 +1,4 @@
-import { frictionLevel, frictionScore } from "./friction-engine";
+import { evaluateFriction } from "./friction-engine";
 import { evaluateGate, type GateResult } from "./responsible-gate";
 import { COMPLETION_REASON, decideExperience, journeyStage } from "./experience-decision";
 import { contextConfidence, contextMatch, contextState } from "./context-engine";
@@ -82,6 +82,12 @@ export type SessionState = {
   contextRestored: boolean;
   /** Active journey context cleared after the customer chose Done. */
   contextCleared: boolean;
+  /** Sports → event → Sports round trips with no progress in between. */
+  lobbyLoops: number;
+  /** Something meaningful happened since the current event was opened. */
+  progressSinceEvent: boolean;
+  /** The customer reached a plausible target (event opened / selection made). */
+  targetDiscovered: boolean;
   /** Measured browser timings, filled from the Performance API. */
   perf: PerfState;
 };
@@ -162,6 +168,9 @@ export function makeInitialSession(demoPath: DemoPath = "none"): SessionState {
     contextSwitched: false,
     contextRestored: false,
     contextCleared: false,
+    lobbyLoops: 0,
+    progressSinceEvent: false,
+    targetDiscovered: false,
   };
 }
 
@@ -219,10 +228,25 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
           emptySearches: next.emptySearches + (empty ? 1 : 0),
           recentQueries: [q, ...state.recentQueries].slice(0, 6),
           reformulations: next.reformulations + (reformulated ? 1 : 0),
+          // A dead end reopens the question of whether a target was found.
+          targetDiscovered: empty ? false : next.targetDiscovered,
         };
       }
       if (action.kind === "market_expand")
-        return { ...next, marketExpansions: next.marketExpansions + 1 };
+        return {
+          ...next,
+          marketExpansions: next.marketExpansions + 1,
+          progressSinceEvent: true,
+        };
+      if (action.kind === "navigation" && action.label === "Sports lobby") {
+        // Sports → event → Sports with nothing achieved in between.
+        const unproductive = !!state.lastViewedMatchId && !state.progressSinceEvent;
+        return {
+          ...next,
+          lobbyLoops: next.lobbyLoops + (unproductive ? 1 : 0),
+          progressSinceEvent: false,
+        };
+      }
       return next;
     }
     case "toggleSelection": {
@@ -252,6 +276,8 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         lastSelectedMarket: action.selection.marketName,
         selections: [...next.selections, action.selection],
         betslipOpen: true,
+        progressSinceEvent: true,
+        targetDiscovered: true,
         perf: {
           ...next.perf,
           firstSelectionMs: next.perf.firstSelectionMs ?? Date.now() - next.startedAt,
@@ -337,6 +363,10 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
             lastViewedMarket: null,
             lastSelectedMarket: null,
             previousMatchId: null,
+            frictionSignals: [],
+            lobbyLoops: 0,
+            progressSinceEvent: false,
+            targetDiscovered: false,
           };
     case "stage":
       return state.previousStage === action.stage ? state : { ...state, previousStage: action.stage };
@@ -359,12 +389,15 @@ export function sessionReducer(state: SessionState, action: SessionAction): Sess
         searchContext: state.searchContext
           ? { ...state.searchContext, matchId: action.matchId }
           : state.searchContext,
+        // Reaching an event is a plausible target — release accumulated strain.
+        targetDiscovered: true,
+        progressSinceEvent: false,
       };
     }
     case "viewMarket":
       return state.lastViewedMarket === action.marketName
-        ? state
-        : { ...state, lastViewedMarket: action.marketName };
+        ? { ...state, progressSinceEvent: true }
+        : { ...state, lastViewedMarket: action.marketName, progressSinceEvent: true };
     case "setMarketTier":
       return { ...state, marketTier: { ...state.marketTier, [action.matchId]: action.tier } };
     case "searchContext":
@@ -386,6 +419,9 @@ export type DerivedSession = {
   sessionSeconds: number;
   friction: number;
   frictionLevel: FrictionLevel;
+  frictionReason: string;
+  /** Plain-language description of how the experience responds. */
+  experienceResponse: string;
   gate: GateResult;
   decision: Decision;
   decisionWhy: string;
@@ -410,9 +446,34 @@ function confidenceBand(value: number): IntentConfidence {
   return "none";
 }
 
+/** How the experience answers the current decision — judge-facing wording. */
+function experienceResponse(decision: Decision): string {
+  switch (decision) {
+    case "SIMPLIFY":
+      return "Prioritise relevant result";
+    case "DISCOVER":
+      return "Surface relevant events";
+    case "CONTINUE":
+      return "Preserve context, stay out of the way";
+    default:
+      return "No intervention";
+  }
+}
+
 export function deriveSession(state: SessionState, now = Date.now()): DerivedSession {
   const odds = totalOdds(state);
-  const friction = frictionScore(state);
+  const frictionResult = evaluateFriction({
+    frictionSignals: state.frictionSignals,
+    emptySearches: state.emptySearches,
+    marketExpansions: state.marketExpansions,
+    reformulations: state.reformulations,
+    lobbyLoops: state.lobbyLoops,
+    targetDiscovered: state.targetDiscovered,
+    selectionCount: state.selections.length,
+    hasPlacement: !!state.lastPlacement,
+    exited: state.exited,
+  });
+  const friction = frictionResult.score;
   const gate = evaluateGate(state.stake, friction);
   const focus = state.contextCleared
     ? undefined
@@ -449,6 +510,9 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
   const { decision, why } = decideExperience({
     gate: gate.state,
     friction,
+    frictionLevel: frictionResult.level,
+    frictionReason: frictionResult.reason,
+    targetDiscovered: state.targetDiscovered,
     emptySearches: state.emptySearches,
     searches: state.searches,
     interactions: state.interactions,
@@ -487,7 +551,9 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
       state.selections.length > 0 ? "committed" : state.interactions > 4 ? "focused" : "browsing",
     sessionSeconds: Math.max(1, Math.round((now - state.startedAt) / 1000)),
     friction,
-    frictionLevel: frictionLevel(friction),
+    frictionLevel: frictionResult.level,
+    frictionReason: frictionResult.reason,
+    experienceResponse: experienceResponse(decision),
     gate,
     decision,
     decisionWhy: why,
@@ -515,7 +581,9 @@ export function deriveSession(state: SessionState, now = Date.now()): DerivedSes
         hasFocus: !!focus,
         viewedCount: state.viewedMatches.length,
       }),
-      frictionLevel: frictionLevel(friction),
+      frictionLevel: frictionResult.level,
+      frictionReason: frictionResult.reason,
+      experienceResponse: experienceResponse(decision),
       responsibleGate: gate.state,
       experienceDecision: decision,
       outcome,

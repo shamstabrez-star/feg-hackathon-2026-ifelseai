@@ -186,7 +186,9 @@ export function IntelligenceTrace() {
 
 
               <Stat label="Friction" value={sessionContext.frictionLevel} />
+              <Stat label="Friction reason" value={sessionContext.frictionReason} />
               <Stat label="Decision" value={intelligence.decision} />
+              <Stat label="Response" value={sessionContext.experienceResponse} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
