@@ -213,11 +213,11 @@ export function IntelligenceTrace() {
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
               Prototype responsible-control state. Responsible controls are evaluated independently
-              of optimisation decisions; this is not a production risk assessment.
+              of experience optimisation. This does not replace FEG production controls.
             </p>
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
               <p className="text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
-                Why
+                Why this decision
               </p>
               <p className="mt-0.5 break-words text-[11px]">{intelligence.decisionWhy}</p>
             </div>
