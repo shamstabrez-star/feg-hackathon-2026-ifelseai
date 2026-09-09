@@ -75,6 +75,8 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [done, setDone] = useState<Placement | null>(null);
+  const [method, setMethod] = useState("PSK account balance");
+  const [methodOpen, setMethodOpen] = useState(false);
 
   if (done) {
     return (
