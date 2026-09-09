@@ -4,8 +4,7 @@ Everything needed to present the prototype except the demo video.
 
 ## Live URLs
 
-- Production: https://psk-shell-spark.lovable.app
-- Custom domain: https://feg.ifelseai.com
+- Production: https://feg.ifelseai.com
 - Sitemap: https://feg.ifelseai.com/sitemap.xml
 
 ## Demo script (5 minutes)

@@ -18,8 +18,8 @@ and `bun.lock`.
 
 ## Backend (optional)
 
-- **Lovable Cloud** (Supabase-managed): PostgreSQL, auth, storage. Not
-  required for the demo journey; no secrets are needed to run it.
+- **Supabase** (optional): PostgreSQL, auth, storage. Not required for the
+  demo journey; no secrets are needed to run it.
 
 ## Development / testing
 
