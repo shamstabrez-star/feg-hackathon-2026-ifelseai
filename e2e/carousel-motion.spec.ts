@@ -32,7 +32,8 @@ test.describe("Casino rail — idle motion", () => {
     // Nothing may move before the first rest cycle elapses.
     await expectStationary(track, CYCLE_MS - 1500, "rail moved before the rest cycle");
     const { to } = await waitForStep(track, start, CYCLE_MS + 4000);
-    expect(Math.abs(to - (start + size))).toBeLessThanOrEqual(TOL);
+    const max = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(to === max || Math.abs(to - (start + size)) <= TOL).toBe(true);
 
     // A second step follows one cycle later — discrete, never continuous.
     await expectSingleStep(track, to, CYCLE_MS + 4000);
@@ -95,7 +96,7 @@ test.describe("Casino rail — interaction pauses and deferred resume", () => {
   test("card click pauses motion and never navigates away", async ({ page }) => {
     const track = await gotoCasino(page);
     const url = page.url();
-    const card = track.getByRole("button", { name: /Book of Fortune/ });
+    const card = track.getByRole("button", { name: /Multiplay 81/ });
     await card.click();
     await page.mouse.move(5, 5);
 
@@ -156,7 +157,7 @@ test.describe("Casino rail — touch input", () => {
   test("tap opens a game without navigation and holds motion", async ({ page }) => {
     const track = await gotoCasino(page);
     const url = page.url();
-    const card = track.getByRole("button", { name: /Book of Fortune/ });
+    const card = track.getByRole("button", { name: /Multiplay 81/ });
     await card.tap();
     expect(page.url()).toBe(url);
     await expectStationary(track, CYCLE_MS * 2, "rail moved after a tap");

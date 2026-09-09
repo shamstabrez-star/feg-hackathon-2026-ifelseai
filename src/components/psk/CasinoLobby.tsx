@@ -15,6 +15,16 @@ const casinoTabs = [
   ["♟", "Game Shows"],
 ] as const;
 
+const casinoTabTargets: Partial<Record<(typeof casinoTabs)[number][1], string>> = {
+  Lobby: "casino-lobby",
+  Providers: "casino-providers",
+  Jackpots: "casino-jackpots",
+  "PSK Favorites": "casino-favorites",
+  "New Games": "casino-new",
+  Popular: "casino-popular",
+  "Game Shows": "casino-instant",
+};
+
 export function CasinoNavigation() {
   return (
     <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-2">
@@ -24,10 +34,8 @@ export function CasinoNavigation() {
             <button
               type="button"
               onClick={() => {
-                const target =
-                  label === "Lobby"
-                    ? document.getElementById("casino-lobby")
-                    : document.getElementById(`casino-${label.toLowerCase().replaceAll(" ", "-")}`);
+                const targetId = casinoTabTargets[label];
+                const target = targetId ? document.getElementById(targetId) : null;
                 target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
               className={`min-h-11 whitespace-nowrap border-b-2 px-2.5 text-xs font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
