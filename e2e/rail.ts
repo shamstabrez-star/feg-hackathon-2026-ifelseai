@@ -103,14 +103,30 @@ export async function waitForStep(
   throw new Error(`Rail did not advance within ${timeoutMs}ms (still at ${from})`);
 }
 
-/** Asserts exactly one controlled step of one card happened from `from`. */
+/**
+ * Asserts a single controlled advance of at most one card.
+ *
+ * The rail advances by one card and scroll-snapping settles it on a card
+ * boundary or on the end of the row, so the landing spot is checked against
+ * those real positions rather than a fixed pixel delta.
+ */
 export async function expectSingleStep(track: Locator, from: number, timeoutMs: number) {
   const size = await stepSize(track);
   const { to } = await waitForStep(track, from, timeoutMs);
-  expect(Math.abs(to - (from + size))).toBeLessThanOrEqual(TOL);
+  const max = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
+  expect(to, "rail moved backwards").toBeGreaterThan(from);
+  expect(to - from, "rail advanced by more than one card").toBeLessThanOrEqual(size + TOL);
+  const snapped =
+    to >= max - TOL ||
+    (await track.evaluate((el, target) => {
+      const items = [...el.querySelectorAll<HTMLElement>("[data-rail-item]")];
+      return items.some((i) => Math.abs(i.offsetLeft - target) <= 6);
+    }, to));
+  expect(snapped, `landing position ${to} is not on a card boundary`).toBe(true);
   // ...and nothing else moves for the remainder of the rest window.
   await expectStationary(track, CYCLE_MS - STEP_MS - 1500, "second step arrived too early");
 }
+
 
 /** Card geometry, used for alignment / jitter assertions. */
 export async function cardGeometry(track: Locator) {
