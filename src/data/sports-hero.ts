@@ -74,7 +74,9 @@ export function sportsHeroDecision(state: SessionState, gate: GateState): Conten
   const query = `${state.intent?.normalisedQuery ?? ""} ${state.intent?.query ?? ""}`.toLowerCase();
   const realMadridIntent =
     (state.intent?.confidence ?? 0) >= 0.75 &&
-    (query.includes("real madrid") || query.includes("madird") || state.intent?.entityId === "rma-int");
+    (query.includes("real madrid") ||
+      query.includes("madird") ||
+      state.intent?.entityId === "rma-int");
   const activeRealMadrid = !state.contextCleared && state.lastViewedMatchId === "rma-int";
   const stage = state.transactionStarted
     ? "transaction"
@@ -93,7 +95,9 @@ export function sportsHeroDecision(state: SessionState, gate: GateState): Conten
         gate !== "PASS"
           ? "Responsible gate overrides content movement."
           : "Decision in progress — competing content reduced.",
-      detail: state.selections.length ? "Selected event context retained without motion." : "Hero held quiet.",
+      detail: state.selections.length
+        ? "Selected event context retained without motion."
+        : "Hero held quiet.",
       motion: "OFF",
       loading: "Additional assets deferred",
       priorityId: activeRealMadrid || realMadridIntent ? "real-madrid" : "free-bet",

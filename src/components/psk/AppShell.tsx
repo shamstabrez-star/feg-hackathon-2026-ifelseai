@@ -20,7 +20,6 @@ export function AppShell({ children }: { children: ReactNode }) {
     enterProduct(productFromPath(pathname));
   }, [pathname, enterProduct]);
 
-
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
       <PskHeader />

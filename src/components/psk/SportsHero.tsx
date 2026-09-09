@@ -34,7 +34,10 @@ export function SportsHero() {
     if (decision.motion !== "ACTIVE" || interacted || ordered.length < 2) return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     if (media.matches || document.visibilityState === "hidden") return;
-    const timer = window.setInterval(() => setActive((value) => (value + 1) % ordered.length), REST_MS);
+    const timer = window.setInterval(
+      () => setActive((value) => (value + 1) % ordered.length),
+      REST_MS,
+    );
     return () => window.clearInterval(timer);
   }, [decision.motion, interacted, ordered.length]);
 
