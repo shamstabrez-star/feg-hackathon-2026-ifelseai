@@ -36,6 +36,10 @@ test.describe("Casino rail — eligibility", () => {
 
     // Client-side navigation keeps the live session state. On narrow layouts
     // the products live behind the compact navigation panel.
+    // The mobile betslip sheet opens over the page; close it first.
+    const closeSlip = page.getByRole("button", { name: "Close betslip" });
+    if (await closeSlip.isVisible().catch(() => false)) await closeSlip.click();
+
     const menu = page.getByRole("button", { name: "Open navigation" });
     if (await menu.isVisible()) await menu.click();
     await page.getByRole("link", { name: "Casino", exact: true }).first().click();
