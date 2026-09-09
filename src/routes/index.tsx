@@ -157,7 +157,7 @@ function Index() {
                         <Link
                           to="/match/$matchId"
                           params={{ matchId: match.id }}
-                          className="mt-1 block truncate text-sm font-bold hover:text-primary"
+                          className="mt-0.5 block truncate py-1.5 text-sm font-bold hover:text-primary"
                         >
                           {match.home} - {match.away}
                           {match.score ? (
