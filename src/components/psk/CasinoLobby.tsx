@@ -38,7 +38,7 @@ export function CasinoNavigation() {
                 const target = targetId ? document.getElementById(targetId) : null;
                 target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className={`min-h-11 whitespace-nowrap border-b-2 px-2.5 text-xs font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`min-h-12 whitespace-nowrap border-b-2 px-3 text-[13px] font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               <span aria-hidden="true" className="mr-1">
                 {icon}
