@@ -27,8 +27,8 @@ const casinoTabTargets: Partial<Record<(typeof casinoTabs)[number][1], string>> 
 
 export function CasinoNavigation() {
   return (
-    <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-2">
-      <ul className="flex min-w-max items-center gap-1">
+    <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-1">
+      <ul className="flex min-w-max items-center gap-1 pr-3">
         {casinoTabs.map(([icon, label], index) => (
           <li key={label}>
             <button
