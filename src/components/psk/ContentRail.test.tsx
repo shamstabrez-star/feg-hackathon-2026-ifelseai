@@ -107,7 +107,8 @@ describe("ContentRail interaction always wins", () => {
     act(() => {
       interact();
     });
-    advance(CYCLE_MS * 2);
+    // Within the post-interaction inactivity window nothing may move.
+    advance(CYCLE_MS);
     expect(scroll.scrollBy).not.toHaveBeenCalled();
   });
 
