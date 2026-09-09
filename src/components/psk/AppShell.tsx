@@ -26,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
       <PskHeader />
-      <PskMobileSearch onSearch={() => setSearchOpen(true)} />
+      {hasOwnSearch ? null : <PskMobileSearch onSearch={() => setSearchOpen(true)} />}
       <PskSubNav onSearch={() => setSearchOpen(true)} />
       <div className="flex min-h-0 w-full min-w-0 flex-1 items-start">
         <PskSidebar className="sticky top-[104px] hidden max-h-[calc(100vh-104px)] lg:block" />
