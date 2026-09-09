@@ -140,7 +140,11 @@ test.describe("Casino rail — interaction pauses and deferred resume", () => {
     await page.getByRole("button", { name: "Scroll Slots games right" }).click();
     await page.waitForTimeout(900);
     const right = await pos(track);
-    expect(Math.abs(right - (start + size))).toBeLessThanOrEqual(TOL);
+    const max = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
+    // One card forward, or the end of the row when fewer than one card remains.
+    expect(right).toBeGreaterThan(start);
+    expect(right - start).toBeLessThanOrEqual(size + TOL);
+    expect(right === max || Math.abs(right - (start + size)) <= TOL).toBe(true);
 
     await page.getByRole("button", { name: "Scroll Slots games left" }).click();
     await page.waitForTimeout(900);
@@ -188,7 +192,10 @@ test.describe("Casino rail — reduced motion", () => {
     const size = await stepSize(track);
     await page.getByRole("button", { name: "Scroll Slots games right" }).click();
     await page.waitForTimeout(900);
-    expect(Math.abs((await pos(track)) - (start + size))).toBeLessThanOrEqual(TOL);
+    const moved = await pos(track);
+    const limit = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
+    expect(moved).toBeGreaterThan(start);
+    expect(moved === limit || Math.abs(moved - (start + size)) <= TOL).toBe(true);
 
     // Still no autoplay afterwards.
     await page.mouse.move(5, 5);
