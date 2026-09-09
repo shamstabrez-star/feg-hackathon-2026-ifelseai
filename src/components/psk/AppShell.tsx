@@ -14,6 +14,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { enterProduct } = useSession();
   const sportsSurface = pathname === "/" || pathname.startsWith("/match/");
+  // Casino surfaces carry their own game search, so the generic mobile search
+  // bar is not repeated there.
+  const hasOwnSearch = pathname.startsWith("/casino") || pathname.startsWith("/live-casino");
 
   // Product recognition follows real navigation only — no simulated moves.
   useEffect(() => {
