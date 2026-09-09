@@ -177,13 +177,14 @@ export function CasinoGameRail({
         }
         label={label ?? `${section.title} games`}
       >
-        {section.games.map((game) => (
+        {section.games.map((game, index) => (
           <div key={game.id} data-rail-item className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
             <CasinoGameCard
               game={game}
               selected={selected?.endsWith(game.name) ?? false}
               onOpen={onOpen}
-              eager={eager}
+              // Only the cards that are actually on screen load immediately.
+              eager={eager && index < 3}
             />
           </div>
         ))}
