@@ -3,7 +3,15 @@ import { CheckCircle2, ShieldCheck, Trash2, X } from "lucide-react";
 import { useSession, type Placement } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
 
-function Confirmation({ placement, onDone }: { placement: Placement; onDone: () => void }) {
+function Confirmation({
+  placement,
+  method,
+  onDone,
+}: {
+  placement: Placement;
+  method: string;
+  onDone: () => void;
+}) {
   const [ticketOpen, setTicketOpen] = useState(false);
   return (
     <div className="p-4 text-center" role="status" aria-live="polite">
