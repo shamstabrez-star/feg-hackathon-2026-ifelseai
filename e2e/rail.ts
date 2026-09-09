@@ -120,7 +120,8 @@ export async function expectSingleStep(track: Locator, from: number, timeoutMs: 
     to >= max - TOL ||
     (await track.evaluate((el, target) => {
       const items = [...el.querySelectorAll<HTMLElement>("[data-rail-item]")];
-      return items.some((i) => Math.abs(i.offsetLeft - target) <= 6);
+      const base = items[0]?.offsetLeft ?? 0;
+      return items.some((i) => Math.abs(i.offsetLeft - base - target) <= 6);
     }, to));
   expect(snapped, `landing position ${to} is not on a card boundary`).toBe(true);
   // ...and nothing else moves for the remainder of the rest window.
