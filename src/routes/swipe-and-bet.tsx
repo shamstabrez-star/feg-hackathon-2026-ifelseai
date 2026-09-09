@@ -9,7 +9,10 @@ export const Route = createFileRoute("/swipe-and-bet")({
       { title: "PSK Intelligence — swipe and bet" },
       { name: "description", content: "PSK Intelligence prototype: swipe and bet section shell." },
       { property: "og:title", content: "PSK Intelligence — swipe and bet" },
-      { property: "og:description", content: "PSK Intelligence prototype: swipe and bet section shell." },
+      {
+        property: "og:description",
+        content: "PSK Intelligence prototype: swipe and bet section shell.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

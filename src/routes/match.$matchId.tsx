@@ -39,7 +39,7 @@ export const Route = createFileRoute("/match/$matchId")({
 
 function MatchPage() {
   const { match } = Route.useLoaderData();
-    const { toggleSelection, state, log, friction, viewMatch, setMarketTier, viewMarket } =
+  const { toggleSelection, state, log, friction, viewMatch, setMarketTier, viewMarket } =
     useSession();
   // In-session continuity: markets already unfolded for this match come back.
   const [tier, setTier] = useState<1 | 2 | 3>(state.marketTier[match.id] ?? 1);
@@ -119,7 +119,9 @@ function MatchPage() {
         {ordered.map(({ market, relevant }) => (
           <section key={market.id} className="rounded-md bg-surface p-4">
             <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-2">
-              <h2 className="truncate text-sm font-semibold text-muted-foreground">{market.name}</h2>
+              <h2 className="truncate text-sm font-semibold text-muted-foreground">
+                {market.name}
+              </h2>
               {relevant ? (
                 <span className="shrink-0 rounded-sm bg-surface-2 px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
                   Based on this match
@@ -223,7 +225,9 @@ function MatchPage() {
                     {r.live ? `${r.minute} LIVE` : r.startsIn}
                   </span>
                 </span>
-                <span className="shrink-0 text-[11px] text-muted-foreground">{r.betCount}+ bets</span>
+                <span className="shrink-0 text-[11px] text-muted-foreground">
+                  {r.betCount}+ bets
+                </span>
               </Link>
             ))}
           </div>
