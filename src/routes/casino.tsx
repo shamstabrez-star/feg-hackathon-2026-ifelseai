@@ -37,7 +37,6 @@ export const Route = createFileRoute("/casino")({
         rel: "preload",
         as: "image",
         href: casinoAssetUrls["hero-playtech"],
-        fetchpriority: "high",
       },
     ],
   }),

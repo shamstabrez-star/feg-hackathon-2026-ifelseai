@@ -32,7 +32,6 @@ export const Route = createFileRoute("/")({
         rel: "preload",
         as: "image",
         href: sportsHeroItems[0]!.src,
-        fetchpriority: "high",
       },
     ],
   }),
