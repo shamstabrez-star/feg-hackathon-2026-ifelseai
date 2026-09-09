@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/loto")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/loto" }],
     meta: [
       { title: "PSK Intelligence — loto" },
       { name: "description", content: "PSK Intelligence prototype: loto section shell." },

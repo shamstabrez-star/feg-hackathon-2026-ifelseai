@@ -4,11 +4,15 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/swipe-and-bet")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/swipe-and-bet" }],
     meta: [
       { title: "PSK Intelligence — swipe and bet" },
       { name: "description", content: "PSK Intelligence prototype: swipe and bet section shell." },
       { property: "og:title", content: "PSK Intelligence — swipe and bet" },
-      { property: "og:description", content: "PSK Intelligence prototype: swipe and bet section shell." },
+      {
+        property: "og:description",
+        content: "PSK Intelligence prototype: swipe and bet section shell.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

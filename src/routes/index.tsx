@@ -28,6 +28,7 @@ export const Route = createFileRoute("/")({
     ],
     // Only the first hero banner is preloaded; the rest stay deferred.
     links: [
+      { rel: "canonical", href: "https://feg.ifelseai.com/" },
       {
         rel: "preload",
         as: "image",
