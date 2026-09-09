@@ -21,9 +21,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [traceReady, setTraceReady] = useState(false);
 
   useEffect(() => {
-    const idle = (
-      window as unknown as { requestIdleCallback?: (cb: () => void) => number }
-    ).requestIdleCallback;
+    const idle = (window as unknown as { requestIdleCallback?: (cb: () => void) => number })
+      .requestIdleCallback;
     if (idle) {
       idle(() => setTraceReady(true));
       return;
