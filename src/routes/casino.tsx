@@ -1,30 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
-import { ContentRail } from "@/components/psk/ContentRail";
+import {
+  CasinoGameCard,
+  CasinoGameRail,
+  CasinoHero,
+  CasinoNavigation,
+  CasinoProviders,
+  CasinoSearch,
+  DeferredCasinoSection,
+} from "@/components/psk/CasinoLobby";
 import { useSession } from "@/lib/session-intelligence";
-import { casinoGames, searchCasinoGames } from "@/data/casino-games";
-
-function GameCard({
-  name,
-  group,
-  onOpen,
-}: {
-  name: string;
-  group: string;
-  onOpen: (name: string) => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={() => onOpen(name)}
-      className="min-h-11 w-full rounded-sm bg-surface-2 px-3 py-3 text-left text-sm font-semibold hover:bg-surface focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
-    >
-      <span className="block truncate">{name}</span>
-      <span className="block truncate text-[11px] font-normal text-muted-foreground">{group}</span>
-    </button>
-  );
-}
+import { casinoGames, casinoSections, searchCasinoGames } from "@/data/casino-games";
+import { casinoContentDecision, orderCasinoSections } from "@/data/casino-orchestration";
 
 export const Route = createFileRoute("/casino")({
   head: () => ({
@@ -48,7 +36,7 @@ export const Route = createFileRoute("/casino")({
 });
 
 function Page() {
-  const { productSearch, productSelect, state } = useSession();
+  const { productSearch, productSelect, state, sessionContext } = useSession();
   const [query, setQuery] = useState("");
   const [debounced, setDebounced] = useState("");
   const lastLogged = useRef<string>("");
@@ -66,77 +54,89 @@ function Page() {
     productSearch(debounced, results.length, results[0]?.name);
   }, [debounced, results, productSearch]);
 
-  const shown = debounced ? results : casinoGames;
   const selected = state.productMemory.CASINO ?? null;
-
-  // Existing catalogue, grouped the way the Casino section already groups it.
-  const railGroups = useMemo(() => {
-    const map = new Map<string, typeof casinoGames>();
-    for (const game of casinoGames) {
-      const list = map.get(game.group) ?? [];
-      list.push(game);
-      map.set(game.group, list);
-    }
-    return [...map.entries()].map(([title, games]) => ({ title, games }));
-  }, []);
+  const contentDecision = casinoContentDecision(sessionContext, debounced);
+  const orderedSections = useMemo(
+    () => orderCasinoSections(casinoSections, debounced),
+    [debounced],
+  );
+  const visibleSections =
+    contentDecision.state === "SILENCE"
+      ? orderedSections.slice(0, 1)
+      : contentDecision.state === "DEFER"
+        ? orderedSections.slice(0, 3)
+        : orderedSections;
 
   return (
     <AppShell>
-      <section className="rounded-md bg-surface p-4 sm:p-6">
-        <h1 className="text-2xl font-bold">Casino</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          Browse casino games or search the existing catalogue.
-        </p>
-
-        <label htmlFor="casino-search" className="mt-4 block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-          Search casino games
-        </label>
-        <input
-          id="casino-search"
-          type="search"
-          value={query}
-          onChange={(e) => setQuery(e.target.value)}
-          placeholder="e.g. Book"
-          className="mt-1 w-full max-w-md rounded-sm border border-border bg-surface-2 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+      <main id="casino-lobby" className="min-w-0 overflow-hidden rounded-md bg-surface">
+        <h1 className="sr-only">PSK Casino</h1>
+        <CasinoHero
+          hidden={contentDecision.state === "SILENCE" || contentDecision.state === "DEFER"}
         />
+        <div className="mt-3">
+          <CasinoNavigation />
+        </div>
+        <CasinoSearch query={query} onQuery={setQuery} />
 
-        <p aria-live="polite" className="mt-2 text-xs text-muted-foreground">
+        <p aria-live="polite" className="px-4 pt-2 text-xs text-muted-foreground">
           {debounced
             ? `${results.length} game${results.length === 1 ? "" : "s"} for "${debounced}"`
             : `${casinoGames.length} games`}
         </p>
 
         {selected ? (
-          <p className="mt-2 text-xs text-muted-foreground">Last opened: {selected}</p>
+          <p className="px-4 pt-1 text-xs text-muted-foreground">Last opened: {selected}</p>
         ) : null}
 
-        {shown.length === 0 ? (
-          <p className="mt-4 text-sm text-muted-foreground">
+        {debounced && results.length === 0 ? (
+          <p className="px-4 py-8 text-sm text-muted-foreground">
             No games match that search. Try a shorter word.
           </p>
         ) : debounced ? (
-          // Search results stay completely still: a result list is never moved.
-          <ul className="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-            {shown.map((game) => (
-              <li key={game.id}>
-                <GameCard name={game.name} group={game.group} onOpen={productSelect} />
-              </li>
-            ))}
-          </ul>
+          <section aria-labelledby="casino-results-title" className="p-4">
+            <h2 id="casino-results-title" className="mb-3 text-base font-bold">
+              Search results
+            </h2>
+            <ul className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+              {results.map((game) => (
+                <li key={game.id}>
+                  <CasinoGameCard
+                    game={game}
+                    selected={selected?.endsWith(game.name) ?? false}
+                    onOpen={productSelect}
+                    eager
+                  />
+                </li>
+              ))}
+            </ul>
+          </section>
         ) : (
-          <div className="mt-4 space-y-6">
-            {railGroups.map((group) => (
-              <ContentRail key={group.title} title={group.title} label={`${group.title} games`}>
-                {group.games.map((game) => (
-                  <div key={game.id} data-rail-item className="w-40 shrink-0 snap-start sm:w-48">
-                    <GameCard name={game.name} group={game.group} onOpen={productSelect} />
-                  </div>
-                ))}
-              </ContentRail>
-            ))}
+          <div className="space-y-7 p-4">
+            {visibleSections.map((section, index) =>
+              index < 2 ? (
+                <CasinoGameRail
+                  key={section.id}
+                  section={section}
+                  selected={selected}
+                  onOpen={productSelect}
+                  {...(index === 0 ? { label: "Slots games" } : {})}
+                  eager={index === 0}
+                />
+              ) : (
+                <DeferredCasinoSection key={section.id} label={`${section.title} loading region`}>
+                  <CasinoGameRail section={section} selected={selected} onOpen={productSelect} />
+                </DeferredCasinoSection>
+              ),
+            )}
+            {contentDecision.state !== "SILENCE" ? (
+              <DeferredCasinoSection label="Casino providers loading region">
+                <CasinoProviders />
+              </DeferredCasinoSection>
+            ) : null}
           </div>
         )}
-      </section>
+      </main>
     </AppShell>
   );
 }

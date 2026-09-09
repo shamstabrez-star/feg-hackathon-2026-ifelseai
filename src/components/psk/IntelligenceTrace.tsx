@@ -3,6 +3,7 @@ import { Activity, ChevronDown } from "lucide-react";
 import { contextMatch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import { useRailMotion } from "@/lib/rail-motion";
+import { casinoContentDecision } from "@/data/casino-orchestration";
 import {
   datasetEvidence,
   datasetsAvailable,
@@ -45,7 +46,15 @@ function EvidenceRow({ item }: { item: EvidenceItem }) {
   );
 }
 
-function EvidenceList({ title, items, tag }: { title: string; items: EvidenceItem[]; tag: string }) {
+function EvidenceList({
+  title,
+  items,
+  tag,
+}: {
+  title: string;
+  items: EvidenceItem[];
+  tag: string;
+}) {
   if (!items.length) return null;
   return (
     <div className="mt-3">
@@ -98,6 +107,7 @@ export function IntelligenceTrace() {
   } = useSession();
 
   const railMotion = useRailMotion();
+  const casinoContent = casinoContentDecision(sessionContext, state.productQuery ?? "");
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -127,7 +137,6 @@ export function IntelligenceTrace() {
   const journey = sessionContext.previousStage
     ? `${stageLabel(sessionContext.previousStage)} → ${stageLabel(sessionContext.journeyStage)}`
     : stageLabel(sessionContext.journeyStage);
-
 
   return (
     <section
@@ -235,13 +244,20 @@ export function IntelligenceTrace() {
               ) : null}
               <Stat label="Journey" value={journey} />
 
-
               <Stat label="Friction" value={sessionContext.frictionLevel} />
               <Stat label="Friction reason" value={sessionContext.frictionReason} />
               <Stat label="Decision" value={intelligence.decision} />
               <Stat label="Response" value={sessionContext.experienceResponse} />
               <Stat label="Responsible gate" value={responsibleGate.state} tone={gateTone} />
               <Stat label="Content motion" value={railMotion.reason} />
+              {sessionContext.activeProduct === "Casino" ? (
+                <>
+                  <Stat label="Content decision" value={casinoContent.state} />
+                  <Stat label="Content reason" value={casinoContent.reason} />
+                  <Stat label="Content loading" value="Visible first · below-fold deferred" />
+                  <Stat label="Asset provenance" value="Cropped from supplied PSK screenshots" />
+                </>
+              ) : null}
               <Stat label="Outcome" value={sessionContext.outcome} />
             </div>
             <p className="mt-1 text-[10px] text-muted-foreground">
@@ -251,8 +267,7 @@ export function IntelligenceTrace() {
             {sessionContext.journeyStage === "decision_ready" ? (
               <p className="mt-1 break-words text-[10px] text-muted-foreground">
                 Decision ready — intended event and outcome chosen, exploration stopped. The
-                existing betslip is kept immediately actionable; nothing is committed
-                automatically.
+                existing betslip is kept immediately actionable; nothing is committed automatically.
               </p>
             ) : null}
             <div className="mt-2 rounded-sm bg-surface-2 p-2">
@@ -298,7 +313,6 @@ export function IntelligenceTrace() {
               </div>
             ) : null}
 
-
             <p className="mt-3 text-[10px] font-bold uppercase tracking-wide text-muted-foreground">
               Prototype demo controls
             </p>
@@ -342,7 +356,10 @@ export function IntelligenceTrace() {
               </div>
             ) : null}
 
-            <details className="mt-3 rounded-sm bg-surface-2/60 p-2" aria-label="Dataset evidence section">
+            <details
+              className="mt-3 rounded-sm bg-surface-2/60 p-2"
+              aria-label="Dataset evidence section"
+            >
               <summary className="cursor-pointer text-[11px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Evidence — derived from supplied challenge dataset
               </summary>
@@ -352,16 +369,8 @@ export function IntelligenceTrace() {
                 and do not change as you click through this demo.
               </p>
 
-              <EvidenceList
-                title="Live session metrics"
-                items={businessMetrics}
-                tag="measured"
-              />
-              <EvidenceList
-                title="Browser performance"
-                items={performanceMetrics}
-                tag="measured"
-              />
+              <EvidenceList title="Live session metrics" items={businessMetrics} tag="measured" />
+              <EvidenceList title="Browser performance" items={performanceMetrics} tag="measured" />
 
               {datasetsAvailable ? (
                 <>
@@ -395,7 +404,6 @@ export function IntelligenceTrace() {
                 </div>
               )}
 
-
               <EvidenceList
                 title="Downstream validation"
                 items={downstreamValidation}
@@ -403,7 +411,10 @@ export function IntelligenceTrace() {
               />
             </details>
 
-            <details className="mt-2 rounded-sm bg-surface-2/60 p-2" aria-label="Production target architecture section">
+            <details
+              className="mt-2 rounded-sm bg-surface-2/60 p-2"
+              aria-label="Production target architecture section"
+            >
               <summary className="cursor-pointer text-[11px] font-bold focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary">
                 Production target architecture — not connected
               </summary>
@@ -411,9 +422,9 @@ export function IntelligenceTrace() {
                 Production target architecture — not connected in this prototype
               </p>
               <p className="mt-1 break-words text-[10px] text-muted-foreground">
-                Cross-product: PSK → Sports · Live · Casino · Live Casino · Lotto · Virtuals ·
-                Forum · PSK Arena — each existing product feeds the same shared interaction-event
-                and session-intelligence architecture. Context stays scoped to the active product.
+                Cross-product: PSK → Sports · Live · Casino · Live Casino · Lotto · Virtuals · Forum
+                · PSK Arena — each existing product feeds the same shared interaction-event and
+                session-intelligence architecture. Context stays scoped to the active product.
               </p>
               <ol className="mt-1 space-y-0.5 text-[11px]">
                 {[
