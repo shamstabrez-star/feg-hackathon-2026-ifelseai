@@ -173,7 +173,7 @@ function Index() {
                       <Link
                         to="/match/$matchId"
                         params={{ matchId: match.id }}
-                        className="shrink-0 rounded-sm bg-surface-2 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                        className="grid min-h-9 shrink-0 place-items-center rounded-sm bg-surface-2 px-2.5 text-[11px] text-muted-foreground hover:text-foreground"
                       >
                         {match.betCount}+ bets
                       </Link>
