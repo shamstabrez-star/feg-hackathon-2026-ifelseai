@@ -2,7 +2,6 @@ import { Link } from "@tanstack/react-router";
 import {
   BadgePercent,
   CircleDot,
-  Flame,
   Goal,
   Hand,
   LayoutGrid,
