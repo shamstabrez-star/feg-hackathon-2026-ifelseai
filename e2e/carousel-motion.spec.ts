@@ -37,8 +37,15 @@ test.describe("Casino rail — idle motion", () => {
     const max = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
     expect(to === max || Math.abs(to - (start + size)) <= TOL).toBe(true);
 
-    // A second step follows one cycle later — discrete, never continuous.
-    await expectSingleStep(track, to, CYCLE_MS + 4000);
+    // A second step follows one cycle later — discrete, never continuous. On
+    // wide screens the first step can already reach the row end, so the next
+    // controlled move is the designed return to the start.
+    if (to >= max - TOL) {
+      const wrapped = await waitForStep(track, to, CYCLE_MS + 4000);
+      expect(wrapped.to).toBeLessThanOrEqual(TOL);
+    } else {
+      await expectSingleStep(track, to, CYCLE_MS + 4000);
+    }
     await noHorizontalOverflow(page);
   });
 
