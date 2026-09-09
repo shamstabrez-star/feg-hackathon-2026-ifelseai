@@ -1,19 +1,48 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Search, SlidersHorizontal } from "lucide-react";
+import {
+  Clapperboard,
+  Crown,
+  Dices,
+  Flame,
+  Gamepad2,
+  House,
+  LayoutGrid,
+  Radio,
+  Search,
+  SlidersHorizontal,
+  Sparkles,
+  Spade,
+  Star,
+  Tags,
+  Trophy,
+  Zap,
+  type LucideIcon,
+} from "lucide-react";
 import { ContentRail } from "./ContentRail";
 import type { CasinoGame, CasinoSection } from "@/data/casino-games";
 import { casinoAssetUrls } from "@/data/casino-assets";
 
 const casinoTabs = [
-  ["⌂", "Lobby"],
-  ["♣", "Providers"],
-  ["♛", "Jackpots"],
-  ["▦", "Themes"],
-  ["★", "PSK Favorites"],
-  ["●", "New Games"],
-  ["●", "Popular"],
-  ["♟", "Game Shows"],
+  [House, "Lobby"],
+  [LayoutGrid, "Providers"],
+  [Crown, "Jackpots"],
+  [Tags, "Themes"],
+  [Star, "PSK Favorites"],
+  [Sparkles, "New Games"],
+  [Flame, "Popular"],
+  [Clapperboard, "Game Shows"],
 ] as const;
+
+const casinoSectionIcons: Record<string, LucideIcon> = {
+  favorites: Star,
+  new: Sparkles,
+  "provider-week": Trophy,
+  fazi: Dices,
+  popular: Flame,
+  jackpots: Crown,
+  instant: Zap,
+  table: Spade,
+};
 
 const casinoTabTargets: Partial<Record<(typeof casinoTabs)[number][1], string>> = {
   Lobby: "casino-lobby",
@@ -29,7 +58,7 @@ export function CasinoNavigation() {
   return (
     <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-1">
       <ul className="flex min-w-max items-center gap-1 pr-3">
-        {casinoTabs.map(([icon, label], index) => (
+        {casinoTabs.map(([Icon, label], index) => (
           <li key={label}>
             <button
               type="button"
@@ -38,10 +67,13 @@ export function CasinoNavigation() {
                 const target = targetId ? document.getElementById(targetId) : null;
                 target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className={`min-h-12 whitespace-nowrap border-b-2 px-3 text-[13px] font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`group inline-flex min-h-12 items-center gap-2 whitespace-nowrap border-b-2 px-3 text-[13px] font-semibold transition-colors ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
-              <span aria-hidden="true" className="mr-1">
-                {icon}
+              <span
+                aria-hidden="true"
+                className={`grid h-7 w-7 place-items-center rounded-sm border transition-colors ${index === 0 ? "border-primary/50 bg-primary/15 text-primary" : "border-border bg-surface-2 group-hover:border-primary/40 group-hover:text-primary"}`}
+              >
+                <Icon className="h-4 w-4" strokeWidth={1.8} />
               </span>
               {label}
             </button>
@@ -164,13 +196,17 @@ export function CasinoGameRail({
   label?: string;
   eager?: boolean;
 }) {
+  const SectionIcon = casinoSectionIcons[section.id] ?? Gamepad2;
   return (
     <div id={`casino-${section.id}`} className="scroll-mt-32">
       <ContentRail
         title={
           <>
-            <span aria-hidden="true" className="mr-1.5 text-primary">
-              {section.icon}
+            <span
+              aria-hidden="true"
+              className="mr-2 inline-grid h-7 w-7 place-items-center rounded-sm border border-primary/30 bg-primary/10 text-primary align-middle"
+            >
+              <SectionIcon className="h-4 w-4" strokeWidth={1.8} />
             </span>
             {section.title}
           </>
@@ -236,7 +272,13 @@ export function CasinoProviders() {
       className="scroll-mt-32"
       aria-labelledby="casino-providers-title"
     >
-      <h2 id="casino-providers-title" className="text-sm font-bold">
+      <h2 id="casino-providers-title" className="flex items-center text-sm font-bold">
+        <span
+          aria-hidden="true"
+          className="mr-2 inline-grid h-7 w-7 place-items-center rounded-sm border border-primary/30 bg-primary/10 text-primary"
+        >
+          <Radio className="h-4 w-4" strokeWidth={1.8} />
+        </span>
         Explore all providers
       </h2>
       <ul className="scroll-x mt-2 flex gap-2 pb-1">
