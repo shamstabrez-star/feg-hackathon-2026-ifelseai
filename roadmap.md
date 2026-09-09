@@ -17,3 +17,6 @@
 - Sandbox constraint: Chromium needs `LD_LIBRARY_PATH="$NIX_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"`.
 
 - [x] Make the existing PSK hero context-aware: default carousel, search/event prioritisation, decision/completion suppression, deferred loading, judge trace, and responsive verification.
+
+- [ ] Final mobile + UX optimisation pass (touch targets, single search per screen, bottom stacking, non-colour selected state)
+- [ ] Page speed optimisation pass (LCP priority asset, defer below-fold, no oversized payloads)
