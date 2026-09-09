@@ -46,8 +46,6 @@ export async function gotoCasino(page: Page): Promise<Locator> {
   return track;
 }
 
-
-
 /**
  * Hovering the rail pauses automatic motion, so it is also the deterministic
  * way to hold the rail still before exercising the manual controls.
@@ -61,7 +59,6 @@ export async function hoverRail(track: Locator) {
 export function pos(track: Locator): Promise<number> {
   return track.evaluate((el) => el.scrollLeft);
 }
-
 
 /** One discrete step = one card + the 8px gap. */
 export async function stepSize(track: Locator): Promise<number> {
@@ -78,8 +75,10 @@ export async function expectStationary(track: Locator, ms: number, why: string) 
   while (Date.now() < deadline) {
     await track.page().waitForTimeout(500);
     const now = await pos(track);
-    expect(Math.abs(now - start), `${why} (moved after ${ms - (deadline - Date.now())}ms)`).
-      toBeLessThanOrEqual(TOL);
+    expect(
+      Math.abs(now - start),
+      `${why} (moved after ${ms - (deadline - Date.now())}ms)`,
+    ).toBeLessThanOrEqual(TOL);
   }
 }
 
@@ -127,7 +126,6 @@ export async function expectSingleStep(track: Locator, from: number, timeoutMs: 
   // ...and nothing else moves for the remainder of the rest window.
   await expectStationary(track, CYCLE_MS - STEP_MS - 1500, "second step arrived too early");
 }
-
 
 /** Card geometry, used for alignment / jitter assertions. */
 export async function cardGeometry(track: Locator) {

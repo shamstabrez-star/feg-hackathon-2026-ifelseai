@@ -31,8 +31,14 @@ test.describe("Casino rail — eligibility", () => {
     await page.goto("/");
     await waitHydrated(page);
     // Open an event and take a price: this is a real customer action.
-    await page.getByRole("link", { name: /Real Madrid/ }).first().click();
-    await page.getByRole("button", { name: /odds \d/ }).first().click();
+    await page
+      .getByRole("link", { name: /Real Madrid/ })
+      .first()
+      .click();
+    await page
+      .getByRole("button", { name: /odds \d/ })
+      .first()
+      .click();
 
     // Client-side navigation keeps the live session state. On narrow layouts
     // the products live behind the compact navigation panel.
@@ -50,7 +56,6 @@ test.describe("Casino rail — eligibility", () => {
     await expectStationary(track.first(), CYCLE_MS * 2, "motion ran with an active selection");
     await noHorizontalOverflow(page);
   });
-
 
   test("hidden document blocks autoplay; restore resumes only when eligible", async ({ page }) => {
     const track = await gotoCasino(page);
@@ -86,7 +91,6 @@ test.describe("Casino rail — eligibility", () => {
     await track.focus();
     await page.keyboard.press("Shift");
     await page.evaluate(() => (document.activeElement as HTMLElement)?.blur());
-
 
     await expectStationary(
       track,

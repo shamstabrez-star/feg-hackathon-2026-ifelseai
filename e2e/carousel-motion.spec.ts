@@ -8,7 +8,6 @@ import {
   expectStationary,
   gotoCasino,
   hoverRail,
-
   noHorizontalOverflow,
   pos,
   rail,
@@ -75,8 +74,6 @@ test.describe("Casino rail — idle motion", () => {
     await page.mouse.move(5, 5);
     const { to } = await waitForStep(track, at, RESUME_AFTER_INTERACTION_MS + CYCLE_MS * 2 + 4000);
     expect(to).toBeLessThanOrEqual(TOL);
-
-
   });
 });
 
@@ -164,7 +161,6 @@ test.describe("Casino rail — touch input", () => {
     expect(page.url()).toBe(url);
     await expectStationary(track, CYCLE_MS * 2, "rail moved after a tap");
   });
-
 
   test("swipe scrolls the rail and pauses autoplay", async ({ page }) => {
     const track = await gotoCasino(page);

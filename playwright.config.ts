@@ -14,7 +14,10 @@ export default defineConfig({
   outputDir: "./e2e/.output",
   snapshotPathTemplate: "{testDir}/__screenshots__/{projectName}/{arg}{ext}",
   timeout: 120_000,
-  expect: { timeout: 20_000, toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: "disabled" } },
+  expect: {
+    timeout: 20_000,
+    toHaveScreenshot: { maxDiffPixelRatio: 0.02, animations: "disabled" },
+  },
   fullyParallel: true,
   workers: process.env["CI"] ? 2 : 3,
   retries: 0,
