@@ -112,7 +112,7 @@ export function ContentRail({
               noteInteraction();
               step(-1);
             }}
-            className="grid h-9 w-9 place-items-center rounded-sm bg-surface-2 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="grid h-11 w-11 place-items-center rounded-sm bg-surface-2 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-9 sm:w-9"
           >
             <ChevronLeft className="h-4 w-4" aria-hidden="true" />
           </button>
@@ -123,7 +123,7 @@ export function ContentRail({
               noteInteraction();
               step(1);
             }}
-            className="grid h-9 w-9 place-items-center rounded-sm bg-surface-2 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+            className="grid h-11 w-11 place-items-center rounded-sm bg-surface-2 text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary sm:h-9 sm:w-9"
           >
             <ChevronRight className="h-4 w-4" aria-hidden="true" />
           </button>
