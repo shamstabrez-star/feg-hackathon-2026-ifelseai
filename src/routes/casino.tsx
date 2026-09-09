@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { casinoAssetUrls } from "@/data/casino-assets";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
 import {
