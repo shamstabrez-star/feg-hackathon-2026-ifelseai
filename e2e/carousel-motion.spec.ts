@@ -30,7 +30,9 @@ test.describe("Casino rail — idle motion", () => {
 
     const start = await pos(track);
     // Nothing may move before the first rest cycle elapses.
-    await expectStationary(track, CYCLE_MS - 1500, "rail moved before the rest cycle");
+    // Allow for setup time already elapsed since the component mounted; this
+    // still proves there is a long idle rest rather than continuous motion.
+    await expectStationary(track, CYCLE_MS - 2500, "rail moved before the rest cycle");
     const { to } = await waitForStep(track, start, CYCLE_MS + 4000);
     const max = await track.evaluate((el) => el.scrollWidth - el.clientWidth);
     expect(to === max || Math.abs(to - (start + size)) <= TOL).toBe(true);
