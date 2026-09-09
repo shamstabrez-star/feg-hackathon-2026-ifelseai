@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/live-casino")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/live-casino" }],
     meta: [
       { title: "PSK Intelligence — live casino" },
       { name: "description", content: "PSK Intelligence prototype: live casino section shell." },

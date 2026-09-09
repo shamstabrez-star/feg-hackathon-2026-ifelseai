@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/swipe-and-bet")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/swipe-and-bet" }],
     meta: [
       { title: "PSK Intelligence — swipe and bet" },
       { name: "description", content: "PSK Intelligence prototype: swipe and bet section shell." },

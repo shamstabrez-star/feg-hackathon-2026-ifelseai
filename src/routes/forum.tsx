@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/forum")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/forum" }],
     meta: [
       { title: "PSK Intelligence — forum" },
       { name: "description", content: "PSK Intelligence prototype: forum section shell." },

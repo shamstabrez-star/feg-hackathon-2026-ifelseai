@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/virtuals")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/virtuals" }],
     meta: [
       { title: "PSK Intelligence — virtuals" },
       { name: "description", content: "PSK Intelligence prototype: virtuals section shell." },

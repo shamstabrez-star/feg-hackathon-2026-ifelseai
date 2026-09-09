@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/psk-arena")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/psk-arena" }],
     meta: [
       { title: "PSK Intelligence — psk arena" },
       { name: "description", content: "PSK Intelligence prototype: psk arena section shell." },

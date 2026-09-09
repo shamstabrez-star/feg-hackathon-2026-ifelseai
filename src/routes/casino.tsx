@@ -33,6 +33,7 @@ export const Route = createFileRoute("/casino")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
+      { rel: "canonical", href: "https://feg.ifelseai.com/casino" },
       {
         rel: "preload",
         as: "image",

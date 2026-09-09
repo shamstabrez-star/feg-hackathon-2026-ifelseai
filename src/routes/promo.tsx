@@ -4,6 +4,7 @@ import { PagePlaceholder } from "@/components/psk/PagePlaceholder";
 
 export const Route = createFileRoute("/promo")({
   head: () => ({
+    links: [{ rel: "canonical", href: "https://feg.ifelseai.com/promo" }],
     meta: [
       { title: "PSK Intelligence — promo" },
       { name: "description", content: "PSK Intelligence prototype: promo section shell." },
