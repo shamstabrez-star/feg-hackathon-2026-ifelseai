@@ -16,4 +16,4 @@
   overflow, and focused rail snapshots.
 - Sandbox constraint: Chromium needs `LD_LIBRARY_PATH="$NIX_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"`.
 
-- [ ] Make the existing PSK hero context-aware: default carousel, search/event prioritisation, decision/completion suppression, deferred loading, judge trace, and responsive verification.
+- [x] Make the existing PSK hero context-aware: default carousel, search/event prioritisation, decision/completion suppression, deferred loading, judge trace, and responsive verification.

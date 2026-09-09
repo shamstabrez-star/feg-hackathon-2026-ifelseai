@@ -214,13 +214,7 @@ export function PskMobileSearch({ onSearch }: { onSearch?: () => void }) {
   );
 }
 
-export function PskSubNav({
-  className,
-  onSearch,
-}: {
-  className?: string;
-  onSearch?: () => void;
-}) {
+export function PskSubNav({ className, onSearch }: { className?: string; onSearch?: () => void }) {
   return (
     <div className={cn("hidden bg-subnav lg:block", className)}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-5">
