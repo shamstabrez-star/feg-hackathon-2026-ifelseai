@@ -78,6 +78,7 @@ export function SportsHero() {
               src={item.src}
               alt={item.label}
               loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
               fetchPriority={index === 0 ? "high" : "low"}
               onLoad={() => index === 0 && setPrimaryLoaded(true)}
               className={cn(
