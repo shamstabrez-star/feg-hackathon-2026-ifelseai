@@ -27,8 +27,8 @@ const casinoTabTargets: Partial<Record<(typeof casinoTabs)[number][1], string>> 
 
 export function CasinoNavigation() {
   return (
-    <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-2">
-      <ul className="flex min-w-max items-center gap-1">
+    <nav aria-label="Casino categories" className="scroll-x border-b border-border bg-surface px-1">
+      <ul className="flex min-w-max items-center gap-1 pr-3">
         {casinoTabs.map(([icon, label], index) => (
           <li key={label}>
             <button
@@ -38,7 +38,7 @@ export function CasinoNavigation() {
                 const target = targetId ? document.getElementById(targetId) : null;
                 target?.scrollIntoView({ behavior: "smooth", block: "start" });
               }}
-              className={`min-h-11 whitespace-nowrap border-b-2 px-2.5 text-xs font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
+              className={`min-h-12 whitespace-nowrap border-b-2 px-3 text-[13px] font-semibold ${index === 0 ? "border-primary text-foreground" : "border-transparent text-muted-foreground hover:text-foreground"}`}
             >
               <span aria-hidden="true" className="mr-1">
                 {icon}
@@ -177,13 +177,14 @@ export function CasinoGameRail({
         }
         label={label ?? `${section.title} games`}
       >
-        {section.games.map((game) => (
+        {section.games.map((game, index) => (
           <div key={game.id} data-rail-item className="w-36 shrink-0 snap-start sm:w-40 lg:w-44">
             <CasinoGameCard
               game={game}
               selected={selected?.endsWith(game.name) ?? false}
               onOpen={onOpen}
-              eager={eager}
+              // Only the cards that are actually on screen load immediately.
+              eager={eager && index < 3}
             />
           </div>
         ))}

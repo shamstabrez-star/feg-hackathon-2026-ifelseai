@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
+import { sportsHeroItems } from "@/data/sports-hero";
 import { matches } from "@/data/psk-data";
 import { categorise } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
@@ -24,6 +25,14 @@ export const Route = createFileRoute("/")({
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+    ],
+    // Only the first hero banner is preloaded; the rest stay deferred.
+    links: [
+      {
+        rel: "preload",
+        as: "image",
+        href: sportsHeroItems[0]!.src,
+      },
     ],
   }),
   component: Index,
@@ -63,7 +72,6 @@ function Index() {
 
   const shown = groups.filter((g) => category === "all" || g.id === category);
 
-
   return (
     <AppShell>
       <div className="rounded-md bg-surface">
@@ -92,31 +100,29 @@ function Index() {
 
       <h1 className="mt-5 text-xl font-bold">Football</h1>
 
-      <nav
-        aria-label="Event categories"
-        className="mt-3 scroll-x -mx-1 flex gap-2 px-1 pb-1"
-      >
-        {[{ id: "all", title: "All events" }, ...groups.map((g) => ({ id: g.id, title: g.title }))].map(
-          (c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={category === c.id}
-              onClick={() => {
-                setCategory(c.id);
-                log("navigation", `Category · ${c.title}`);
-              }}
-              className={cn(
-                "min-h-9 shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors",
-                category === c.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-2 text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {c.title}
-            </button>
-          ),
-        )}
+      <nav aria-label="Event categories" className="mt-3 scroll-x -mx-1 flex gap-2 px-1 pb-1">
+        {[
+          { id: "all", title: "All events" },
+          ...groups.map((g) => ({ id: g.id, title: g.title })),
+        ].map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={category === c.id}
+            onClick={() => {
+              setCategory(c.id);
+              log("navigation", `Category · ${c.title}`);
+            }}
+            className={cn(
+              "min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
+              category === c.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-surface-2 text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {c.title}
+          </button>
+        ))}
       </nav>
 
       <div className="mt-4 space-y-6">
@@ -160,7 +166,7 @@ function Index() {
                         <Link
                           to="/match/$matchId"
                           params={{ matchId: match.id }}
-                          className="mt-1 block truncate text-sm font-bold hover:text-primary"
+                          className="mt-0.5 block truncate py-1.5 text-sm font-bold hover:text-primary"
                         >
                           {match.home} - {match.away}
                           {match.score ? (
@@ -173,7 +179,7 @@ function Index() {
                       <Link
                         to="/match/$matchId"
                         params={{ matchId: match.id }}
-                        className="shrink-0 rounded-sm bg-surface-2 px-2 py-1 text-[11px] text-muted-foreground hover:text-foreground"
+                        className="grid min-h-9 shrink-0 place-items-center rounded-sm bg-surface-2 px-2.5 text-[11px] text-muted-foreground hover:text-foreground"
                       >
                         {match.betCount}+ bets
                       </Link>
@@ -203,9 +209,12 @@ function Index() {
                                 active ? "text-primary-foreground/80" : "text-muted-foreground",
                               )}
                             >
+                              {active ? <span aria-hidden="true">✓ </span> : null}
                               {o.label}
                             </div>
-                            <div className="text-sm font-bold tabular-nums">{o.odds.toFixed(2)}</div>
+                            <div className="text-sm font-bold tabular-nums">
+                              {o.odds.toFixed(2)}
+                            </div>
                           </button>
                         );
                       })}

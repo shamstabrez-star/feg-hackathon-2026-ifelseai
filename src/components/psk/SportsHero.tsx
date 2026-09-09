@@ -78,6 +78,7 @@ export function SportsHero() {
               src={item.src}
               alt={item.label}
               loading={index === 0 ? "eager" : "lazy"}
+              decoding="async"
               fetchPriority={index === 0 ? "high" : "low"}
               onLoad={() => index === 0 && setPrimaryLoaded(true)}
               className={cn(
@@ -100,11 +101,16 @@ export function SportsHero() {
                 setActive(index);
                 pauseTemporarily();
               }}
-              className={cn(
-                "h-2.5 w-2.5 rounded-full outline-offset-4 transition-colors focus-visible:outline-2 focus-visible:outline-primary",
-                index === active ? "bg-primary" : "bg-muted-foreground/40",
-              )}
-            />
+              className="grid h-11 w-9 place-items-center rounded-md outline-offset-2 focus-visible:outline-2 focus-visible:outline-primary"
+            >
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "block h-2.5 w-2.5 rounded-full transition-colors",
+                  index === active ? "bg-primary" : "bg-muted-foreground/40",
+                )}
+              />
+            </button>
           ))}
         </div>
       ) : null}

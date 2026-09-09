@@ -148,7 +148,7 @@ export function IntelligenceTrace() {
       <div className="pointer-events-auto overflow-hidden rounded-t-xl border border-border bg-popover/95 shadow-xl backdrop-blur sm:rounded-md">
         <button
           onClick={() => setTrace(!state.traceOpen)}
-          className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
+          className="grid w-full grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-2 min-h-11 px-3 py-2 text-left focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
           aria-expanded={state.traceOpen}
           aria-controls="psk-intelligence-panel"
         >

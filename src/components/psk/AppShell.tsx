@@ -14,6 +14,9 @@ export function AppShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { enterProduct } = useSession();
   const sportsSurface = pathname === "/" || pathname.startsWith("/match/");
+  // Casino surfaces carry their own game search, so the generic mobile search
+  // bar is not repeated there.
+  const hasOwnSearch = pathname.startsWith("/casino") || pathname.startsWith("/live-casino");
 
   // Product recognition follows real navigation only — no simulated moves.
   useEffect(() => {
@@ -23,7 +26,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-screen w-full max-w-full flex-col overflow-x-hidden bg-background">
       <PskHeader />
-      <PskMobileSearch onSearch={() => setSearchOpen(true)} />
+      {hasOwnSearch ? null : <PskMobileSearch onSearch={() => setSearchOpen(true)} />}
       <PskSubNav onSearch={() => setSearchOpen(true)} />
       <div className="flex min-h-0 w-full min-w-0 flex-1 items-start">
         <PskSidebar className="sticky top-[104px] hidden max-h-[calc(100vh-104px)] lg:block" />
