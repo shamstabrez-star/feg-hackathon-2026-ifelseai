@@ -204,6 +204,7 @@ export function PskMobileSearch({ onSearch }: { onSearch?: () => void }) {
     <div className="bg-subnav px-3 py-2 lg:hidden">
       <button
         onClick={onSearch}
+        aria-label="Search matches"
         className="grid min-h-11 w-full grid-cols-[auto_minmax(0,1fr)] items-center gap-2 rounded-md bg-surface-2 px-3 text-left text-sm text-muted-foreground transition-colors hover:text-foreground"
       >
         <Search className="h-4 w-4 shrink-0" aria-hidden="true" />
@@ -213,13 +214,7 @@ export function PskMobileSearch({ onSearch }: { onSearch?: () => void }) {
   );
 }
 
-export function PskSubNav({
-  className,
-  onSearch,
-}: {
-  className?: string;
-  onSearch?: () => void;
-}) {
+export function PskSubNav({ className, onSearch }: { className?: string; onSearch?: () => void }) {
   return (
     <div className={cn("hidden bg-subnav lg:block", className)}>
       <div className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-3 px-3 sm:px-5">

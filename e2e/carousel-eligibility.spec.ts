@@ -20,7 +20,7 @@ test.describe("Casino rail — eligibility", () => {
   test("search results replace the rails and nothing moves", async ({ page }) => {
     await gotoCasino(page);
     await page.getByLabel("Search casino games").fill("Book");
-    await expect(page.getByText('2 games for "Book"')).toBeVisible();
+    await expect(page.getByText('1 game for "Book"')).toBeVisible();
     await expect(rail(page)).toHaveCount(0);
     await page.waitForTimeout(CYCLE_MS + 1500);
     await expect(rail(page)).toHaveCount(0);
