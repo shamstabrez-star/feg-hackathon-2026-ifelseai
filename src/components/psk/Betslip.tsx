@@ -3,7 +3,15 @@ import { CheckCircle2, ShieldCheck, Trash2, X } from "lucide-react";
 import { useSession, type Placement } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
 
-function Confirmation({ placement, onDone }: { placement: Placement; onDone: () => void }) {
+function Confirmation({
+  placement,
+  method,
+  onDone,
+}: {
+  placement: Placement;
+  method: string;
+  onDone: () => void;
+}) {
   const [ticketOpen, setTicketOpen] = useState(false);
   return (
     <div className="p-4 text-center" role="status" aria-live="polite">
@@ -27,6 +35,8 @@ function Confirmation({ placement, onDone }: { placement: Placement; onDone: () 
         <span className="text-right font-semibold">{placement.totalOdds.toFixed(2)}</span>
         <span className="text-muted-foreground">Potential return</span>
         <span className="text-right font-semibold">{placement.potentialReturn.toFixed(2)} €</span>
+        <span className="text-muted-foreground">Payment method</span>
+        <span className="text-right font-semibold">{method}</span>
       </div>
       {ticketOpen ? (
         <div className="mt-4 rounded-md bg-surface-2 p-3 text-left text-xs text-muted-foreground">
@@ -73,11 +83,14 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
   const [confirming, setConfirming] = useState(false);
   const [placing, setPlacing] = useState(false);
   const [done, setDone] = useState<Placement | null>(null);
+  const [method, setMethod] = useState("PSK account balance");
+  const [methodOpen, setMethodOpen] = useState(false);
 
   if (done) {
     return (
       <Confirmation
         placement={done}
+        method={method}
         onDone={() => {
           setDone(null);
           exitSession();
@@ -175,7 +188,9 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
       <div
         className={cn(
           "mt-3 flex items-start gap-2 rounded-md p-3 text-xs",
-          responsibleGate.pass ? "bg-surface-2 text-muted-foreground" : "bg-destructive/15 text-destructive",
+          responsibleGate.pass
+            ? "bg-surface-2 text-muted-foreground"
+            : "bg-destructive/15 text-destructive",
         )}
       >
         <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0" aria-hidden="true" />
@@ -188,12 +203,68 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
 
       {confirming ? (
         <div className="mt-3 rounded-md bg-surface-2 p-3">
-          <p className="text-sm">
-            Place {state.selections.length} selection(s) for {state.stake.toFixed(2)} €?
-          </p>
-          <p className="mt-1 text-xs text-muted-foreground">
-            Odds {totalOdds.toFixed(2)} · potential return {potentialReturn.toFixed(2)} €. If odds
-            change before you confirm, the betslip updates and you review again.
+          <h4 className="text-[11px] font-bold tracking-wide text-muted-foreground uppercase">
+            Review and confirm
+          </h4>
+          <dl className="mt-2 space-y-1 text-sm">
+            {state.selections.map((s) => (
+              <div key={s.key} className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+                <dt className="truncate text-muted-foreground">
+                  {s.matchLabel} · {s.marketName} · {s.outcomeLabel}
+                </dt>
+                <dd className="shrink-0 font-semibold">{s.odds.toFixed(2)}</dd>
+              </div>
+            ))}
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2 border-t border-border pt-1">
+              <dt className="text-muted-foreground">Stake</dt>
+              <dd className="font-semibold">{state.stake.toFixed(2)} €</dd>
+            </div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <dt className="text-muted-foreground">Total odds</dt>
+              <dd className="font-semibold">{totalOdds.toFixed(2)}</dd>
+            </div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <dt className="text-muted-foreground">Potential return</dt>
+              <dd className="font-semibold">{potentialReturn.toFixed(2)} €</dd>
+            </div>
+            <div className="grid grid-cols-[minmax(0,1fr)_auto] gap-2">
+              <dt className="text-muted-foreground">Payment method</dt>
+              <dd className="min-w-0 truncate font-semibold">{method}</dd>
+            </div>
+          </dl>
+          <button
+            type="button"
+            onClick={() => setMethodOpen((v) => !v)}
+            aria-expanded={methodOpen}
+            className="mt-1 min-h-9 text-xs font-semibold text-primary underline-offset-2 hover:underline"
+          >
+            {methodOpen ? "Close" : "Change payment method"}
+          </button>
+          {methodOpen ? (
+            <ul className="mt-1 space-y-1">
+              {["PSK account balance", "PSK bonus balance"].map((option) => (
+                <li key={option}>
+                  <button
+                    type="button"
+                    aria-pressed={method === option}
+                    onClick={() => {
+                      setMethod(option);
+                      setMethodOpen(false);
+                    }}
+                    className={cn(
+                      "min-h-10 w-full rounded-md border px-3 text-left text-xs",
+                      method === option ? "border-primary" : "border-border text-muted-foreground",
+                    )}
+                  >
+                    {option}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          ) : null}
+          <p className="mt-2 text-xs text-muted-foreground">
+            Nothing is charged until you confirm. If odds change before you confirm, the betslip
+            updates and you review again.
           </p>
           <div className="mt-3 flex gap-2">
             <button
