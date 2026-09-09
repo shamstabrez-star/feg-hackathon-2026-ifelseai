@@ -6,8 +6,18 @@ import { matches } from "@/data/psk-data";
 import { categorise } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import { cn } from "@/lib/utils";
+import { CalendarClock, History, LayoutGrid, Layers3, Radio, Trophy } from "lucide-react";
 
 const filters = ["LIVE", "TODAY", "1H", "3H", "TOMORROW", "ALL"] as const;
+
+const categoryIcons = {
+  all: LayoutGrid,
+  continue: History,
+  competition: Trophy,
+  live: Radio,
+  upcoming: CalendarClock,
+  other: Layers3,
+};
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -105,8 +115,10 @@ function Index() {
         {[
           { id: "all", title: "All events" },
           ...groups.map((g) => ({ id: g.id, title: g.title })),
-        ].map((c) => (
-          <button
+        ].map((c) => {
+          const CategoryIcon = categoryIcons[c.id as keyof typeof categoryIcons] ?? Trophy;
+          return (
+            <button
             key={c.id}
             type="button"
             aria-pressed={category === c.id}
@@ -115,15 +127,17 @@ function Index() {
               log("navigation", `Category · ${c.title}`);
             }}
             className={cn(
-              "min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
+              "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
               category === c.id
                 ? "bg-primary text-primary-foreground"
                 : "bg-surface-2 text-muted-foreground hover:text-foreground",
             )}
           >
-            {c.title}
-          </button>
-        ))}
+              <CategoryIcon className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
+              {c.title}
+            </button>
+          );
+        })}
       </nav>
 
       <div className="mt-4 space-y-6">
