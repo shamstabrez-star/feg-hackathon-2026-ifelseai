@@ -37,6 +37,12 @@ Toggle the judge-only trace panel during the demo to show LIVE SESSION vs
 DATASET EVIDENCE, WHY THIS DECISION, SESSION TRACE, provenance and
 limitations, measured-only timings, and the independent Responsible Gate.
 
+## Documents
+
+- `PSK_Intelligence_Compliance_Note_FEG_2026.pdf` — compliance note for the
+  PSK Intelligence prototype (privacy, responsible-gaming guardrails, data
+  provenance).
+
 ## Screenshots / captures
 
 Focused E2E rail snapshots are regenerated under `e2e/__screenshots__/` via
