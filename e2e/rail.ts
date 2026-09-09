@@ -20,15 +20,21 @@ export function rail(page: Page): Locator {
   return page.getByRole("group", { name: RAIL_LABEL });
 }
 
+/**
+ * Waits for client hydration. The judge panel only prints a session reference
+ * once the client has mounted, which is also when interactive handlers live.
+ */
+export async function waitHydrated(page: Page) {
+  await expect(
+    page.getByRole("region", { name: "PSK Intelligence judge panel" }).getByText(/S-[A-Z0-9]{4}/),
+  ).toBeVisible();
+}
+
 export async function gotoCasino(page: Page): Promise<Locator> {
   await page.goto("/casino");
   const track = rail(page);
   await track.waitFor();
-  // Wait for hydration: the session reference only renders once the client has
-  // mounted, which is also when the rail's own event handlers become live.
-  await expect(
-    page.getByRole("region", { name: "PSK Intelligence judge panel" }).getByText(/S-[A-Z0-9]{4}/),
-  ).toBeVisible();
+  await waitHydrated(page);
   // Keep the rail inside the viewport: hover/tap/keyboard input must land on
   // the real element, and Playwright must not auto-scroll mid-test.
   await track.scrollIntoViewIfNeeded();

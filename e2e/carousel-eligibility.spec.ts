@@ -8,6 +8,7 @@ import {
   noHorizontalOverflow,
   pos,
   rail,
+  waitHydrated,
 } from "./rail";
 
 /**
@@ -28,6 +29,7 @@ test.describe("Casino rail — eligibility", () => {
 
   test("an active sports selection suppresses motion after moving to Casino", async ({ page }) => {
     await page.goto("/");
+    await waitHydrated(page);
     // Open an event and take a price: this is a real customer action.
     await page.getByRole("link", { name: /Real Madrid/ }).first().click();
     await page.getByRole("button", { name: /odds \d/ }).first().click();
