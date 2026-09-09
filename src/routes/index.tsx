@@ -199,10 +199,11 @@ function Index() {
                           >
                             <div
                               className={cn(
-                                "truncate text-[11px]",
+                              "truncate text-[11px]",
                                 active ? "text-primary-foreground/80" : "text-muted-foreground",
                               )}
                             >
+                              {active ? <span aria-hidden="true">✓ </span> : null}
                               {o.label}
                             </div>
                             <div className="text-sm font-bold tabular-nums">{o.odds.toFixed(2)}</div>
