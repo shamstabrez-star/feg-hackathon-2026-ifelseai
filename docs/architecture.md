@@ -10,8 +10,8 @@ intelligence at work through a judge-only trace panel.
 - **TypeScript** end to end
 - **Tailwind CSS v4** (semantic tokens in `src/styles.css`)
 - **Vitest + jsdom** for unit/component tests; **Playwright** for real-browser E2E
-- Optional **Lovable Cloud** (Supabase-managed) for persistence/auth — not
-  required for the demo
+- Optional **Supabase** backend (PostgreSQL, auth, storage) — not required
+  for the demo
 
 ## Conceptual layers
 
