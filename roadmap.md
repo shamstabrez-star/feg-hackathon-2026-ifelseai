@@ -5,3 +5,11 @@
 - [x] Automated tests for Casino browse rail motion (vitest + jsdom, 39 tests)
 - [ ] Playwright E2E setup + real-browser carousel motion tests (reduced-motion, hover/click/keyboard/touch pause + deferred single-step resume)
 - [ ] E2E: hidden-tab/visibility restore test + focused idle-step snapshot (alignment/no jitter)
+
+## Playwright E2E (Casino content rails) — done
+- Real-browser suite at 1440 / 834 / 430 / 375 (`bun run test:e2e`).
+- Covers idle discrete stepping, alignment, end wrapping, hover / card click /
+  keyboard / touch / swipe pausing and eligible deferred resume, search and
+  active-selection suppression, hidden-tab behaviour, reduced motion, page
+  overflow, and focused rail snapshots.
+- Sandbox constraint: Chromium needs `LD_LIBRARY_PATH="$NIX_LD_LIBRARY_PATH:$LD_LIBRARY_PATH"`.
