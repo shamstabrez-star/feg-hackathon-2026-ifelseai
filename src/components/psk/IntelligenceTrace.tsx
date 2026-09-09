@@ -4,6 +4,7 @@ import { contextMatch } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
 import { useRailMotion } from "@/lib/rail-motion";
 import { casinoContentDecision } from "@/data/casino-orchestration";
+import { sportsHeroDecision } from "@/data/sports-hero";
 import {
   datasetEvidence,
   datasetsAvailable,
@@ -108,6 +109,7 @@ export function IntelligenceTrace() {
 
   const railMotion = useRailMotion();
   const casinoContent = casinoContentDecision(sessionContext, state.productQuery ?? "");
+  const sportsContent = sportsHeroDecision(state, responsibleGate.state);
 
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
@@ -255,6 +257,16 @@ export function IntelligenceTrace() {
                   <Stat label="Content decision" value={casinoContent.state} />
                   <Stat label="Content reason" value={casinoContent.reason} />
                   <Stat label="Content loading" value="Visible first · below-fold deferred" />
+                  <Stat label="Asset provenance" value="Cropped from supplied PSK screenshots" />
+                </>
+              ) : null}
+              {sessionContext.activeProduct === "Sport" ? (
+                <>
+                  <Stat label="Content intelligence" value={sportsContent.decision} />
+                  <Stat label="Content reason" value={sportsContent.reason} />
+                  <Stat label="Content response" value={sportsContent.detail} />
+                  <Stat label="Hero motion" value={sportsContent.motion} />
+                  <Stat label="Loading intelligence" value={sportsContent.loading} />
                   <Stat label="Asset provenance" value="Cropped from supplied PSK screenshots" />
                 </>
               ) : null}
