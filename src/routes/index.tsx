@@ -25,6 +25,15 @@ export const Route = createFileRoute("/")({
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    // Only the first hero banner is preloaded; the rest stay deferred.
+    links: [
+      {
+        rel: "preload",
+        as: "image",
+        href: sportsHeroItems[0]!.src,
+        fetchpriority: "high",
+      },
+    ],
   }),
   component: Index,
 });
