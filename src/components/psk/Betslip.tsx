@@ -36,7 +36,7 @@ function Confirmation({
         <span className="text-muted-foreground">Potential return</span>
         <span className="text-right font-semibold">{placement.potentialReturn.toFixed(2)} €</span>
         <span className="text-muted-foreground">Payment method</span>
-        <span className="text-right font-semibold">PSK account balance</span>
+        <span className="text-right font-semibold">{method}</span>
       </div>
       {ticketOpen ? (
         <div className="mt-4 rounded-md bg-surface-2 p-3 text-left text-xs text-muted-foreground">
@@ -90,6 +90,7 @@ export function BetslipBody({ onClose }: { onClose?: () => void }) {
     return (
       <Confirmation
         placement={done}
+        method={method}
         onDone={() => {
           setDone(null);
           exitSession();
