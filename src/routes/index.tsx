@@ -63,7 +63,6 @@ function Index() {
 
   const shown = groups.filter((g) => category === "all" || g.id === category);
 
-
   return (
     <AppShell>
       <div className="rounded-md bg-surface">
@@ -92,31 +91,29 @@ function Index() {
 
       <h1 className="mt-5 text-xl font-bold">Football</h1>
 
-      <nav
-        aria-label="Event categories"
-        className="mt-3 scroll-x -mx-1 flex gap-2 px-1 pb-1"
-      >
-        {[{ id: "all", title: "All events" }, ...groups.map((g) => ({ id: g.id, title: g.title }))].map(
-          (c) => (
-            <button
-              key={c.id}
-              type="button"
-              aria-pressed={category === c.id}
-              onClick={() => {
-                setCategory(c.id);
-                log("navigation", `Category · ${c.title}`);
-              }}
-              className={cn(
-                "min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
-                category === c.id
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-surface-2 text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {c.title}
-            </button>
-          ),
-        )}
+      <nav aria-label="Event categories" className="mt-3 scroll-x -mx-1 flex gap-2 px-1 pb-1">
+        {[
+          { id: "all", title: "All events" },
+          ...groups.map((g) => ({ id: g.id, title: g.title })),
+        ].map((c) => (
+          <button
+            key={c.id}
+            type="button"
+            aria-pressed={category === c.id}
+            onClick={() => {
+              setCategory(c.id);
+              log("navigation", `Category · ${c.title}`);
+            }}
+            className={cn(
+              "min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
+              category === c.id
+                ? "bg-primary text-primary-foreground"
+                : "bg-surface-2 text-muted-foreground hover:text-foreground",
+            )}
+          >
+            {c.title}
+          </button>
+        ))}
       </nav>
 
       <div className="mt-4 space-y-6">
@@ -199,14 +196,16 @@ function Index() {
                           >
                             <div
                               className={cn(
-                              "truncate text-[11px]",
+                                "truncate text-[11px]",
                                 active ? "text-primary-foreground/80" : "text-muted-foreground",
                               )}
                             >
                               {active ? <span aria-hidden="true">✓ </span> : null}
                               {o.label}
                             </div>
-                            <div className="text-sm font-bold tabular-nums">{o.odds.toFixed(2)}</div>
+                            <div className="text-sm font-bold tabular-nums">
+                              {o.odds.toFixed(2)}
+                            </div>
                           </button>
                         );
                       })}

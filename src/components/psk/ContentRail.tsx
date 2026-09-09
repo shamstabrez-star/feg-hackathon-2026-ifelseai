@@ -65,7 +65,6 @@ export function ContentRail({
     noteInteraction();
   }, [noteInteraction]);
 
-
   // Discrete auto-advance. Never runs when the customer is interacting, when
   // reduced motion is preferred, or when the session engine says otherwise.
   useEffect(() => {
