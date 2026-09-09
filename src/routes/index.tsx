@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/psk/AppShell";
+import { sportsHeroItems } from "@/data/sports-hero";
 import { matches } from "@/data/psk-data";
 import { categorise } from "@/core";
 import { useSession } from "@/lib/session-intelligence";
