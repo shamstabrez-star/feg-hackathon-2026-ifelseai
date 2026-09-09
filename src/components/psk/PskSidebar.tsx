@@ -85,8 +85,6 @@ function useRecommendRail() {
         ? "Relevant to you"
         : "We recommend";
 
-
-
   const around = [focus, ...relatedMatches(focus, 2)];
   const rest = matches.filter((m) => !around.some((a) => a.id === m.id)).slice(0, 2);
   return {
@@ -114,7 +112,10 @@ export function PskSidebar({ className }: { className?: string }) {
                 key={item}
                 className="flex cursor-pointer items-center gap-3 border-b border-sidebar-border py-3 text-sm transition-colors hover:text-foreground"
               >
-                <span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-surface-2 text-primary" aria-hidden>
+                <span
+                  className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-surface-2 text-primary"
+                  aria-hidden
+                >
                   <Goal className="h-4 w-4" strokeWidth={1.8} />
                 </span>
                 <span className="truncate">{item}</span>
@@ -126,7 +127,10 @@ export function PskSidebar({ className }: { className?: string }) {
                   params={{ matchId: item.id }}
                   className="flex items-center gap-3 py-3 text-sm transition-colors hover:text-foreground"
                 >
-                  <span className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-surface-2 text-primary" aria-hidden>
+                  <span
+                    className="grid h-7 w-7 shrink-0 place-items-center rounded-sm bg-surface-2 text-primary"
+                    aria-hidden
+                  >
                     <Goal className="h-4 w-4" strokeWidth={1.8} />
                   </span>
                   <span className="truncate">{item.label}</span>
@@ -147,18 +151,21 @@ export function PskSidebar({ className }: { className?: string }) {
               {group.items.map((item) => {
                 const Icon = item.icon;
                 return (
-                <li
-                  key={item.label}
-                  className="group grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-sidebar-border py-2.5 text-sm transition-colors hover:text-foreground"
-                >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-sidebar-border bg-surface-2 text-muted-foreground transition-colors group-hover:border-primary/50 group-hover:text-primary" aria-hidden>
-                      <Icon className="h-4 w-4" strokeWidth={1.8} />
+                  <li
+                    key={item.label}
+                    className="group grid cursor-pointer grid-cols-[minmax(0,1fr)_auto] items-center gap-3 border-b border-sidebar-border py-2.5 text-sm transition-colors hover:text-foreground"
+                  >
+                    <span className="flex min-w-0 items-center gap-3">
+                      <span
+                        className="grid h-8 w-8 shrink-0 place-items-center rounded-sm border border-sidebar-border bg-surface-2 text-muted-foreground transition-colors group-hover:border-primary/50 group-hover:text-primary"
+                        aria-hidden
+                      >
+                        <Icon className="h-4 w-4" strokeWidth={1.8} />
+                      </span>
+                      <span className="truncate">{item.label}</span>
                     </span>
-                    <span className="truncate">{item.label}</span>
-                  </span>
-                  <span className="shrink-0 text-xs text-muted-foreground">{item.count}</span>
-                </li>
+                    <span className="shrink-0 text-xs text-muted-foreground">{item.count}</span>
+                  </li>
                 );
               })}
             </ul>

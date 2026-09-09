@@ -119,20 +119,20 @@ function Index() {
           const CategoryIcon = categoryIcons[c.id as keyof typeof categoryIcons] ?? Trophy;
           return (
             <button
-            key={c.id}
-            type="button"
-            aria-pressed={category === c.id}
-            onClick={() => {
-              setCategory(c.id);
-              log("navigation", `Category · ${c.title}`);
-            }}
-            className={cn(
-              "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
-              category === c.id
-                ? "bg-primary text-primary-foreground"
-                : "bg-surface-2 text-muted-foreground hover:text-foreground",
-            )}
-          >
+              key={c.id}
+              type="button"
+              aria-pressed={category === c.id}
+              onClick={() => {
+                setCategory(c.id);
+                log("navigation", `Category · ${c.title}`);
+              }}
+              className={cn(
+                "inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
+                category === c.id
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-surface-2 text-muted-foreground hover:text-foreground",
+              )}
+            >
               <CategoryIcon className="h-4 w-4" strokeWidth={1.8} aria-hidden="true" />
               {c.title}
             </button>
