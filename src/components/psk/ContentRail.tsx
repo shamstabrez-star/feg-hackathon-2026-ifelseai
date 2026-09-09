@@ -40,6 +40,9 @@ export function ContentRail({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const lastInteraction = useRef(0);
+  // True while the rail itself is performing a step, so the resulting scroll
+  // events are not mistaken for customer interaction.
+  const autoStepping = useRef(false);
   const [hovering, setHovering] = useState(false);
   const [focusWithin, setFocusWithin] = useState(false);
   const reduced = usePrefersReducedMotion();
@@ -57,6 +60,12 @@ export function ContentRail({
     lastInteraction.current = Date.now();
   }, []);
 
+  const onTrackScroll = useCallback(() => {
+    if (autoStepping.current) return;
+    noteInteraction();
+  }, [noteInteraction]);
+
+
   // Discrete auto-advance. Never runs when the customer is interacting, when
   // reduced motion is preferred, or when the session engine says otherwise.
   useEffect(() => {
@@ -68,9 +77,14 @@ export function ContentRail({
       if (document.hidden) return;
       const max = el.scrollWidth - el.clientWidth;
       if (max <= 4) return;
+      autoStepping.current = true;
+      window.setTimeout(() => {
+        autoStepping.current = false;
+      }, STEP_MS + 400);
       if (el.scrollLeft >= max - 4) el.scrollTo({ left: 0, behavior: "smooth" });
       else step(1);
     }, REST_MS + STEP_MS);
+
     return () => clearInterval(timer);
   }, [reduced, motion.allowed, hovering, focusWithin, step]);
 
@@ -120,7 +134,7 @@ export function ContentRail({
         role="group"
         aria-label={label}
         tabIndex={0}
-        onScroll={noteInteraction}
+        onScroll={onTrackScroll}
         className="scroll-x mt-2 flex snap-x snap-mandatory gap-2 pb-1 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary"
       >
         {children}
