@@ -107,7 +107,7 @@ function Index() {
                 log("navigation", `Category · ${c.title}`);
               }}
               className={cn(
-                "min-h-9 shrink-0 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap transition-colors",
+                "min-h-11 shrink-0 rounded-full px-4 py-2 text-xs font-semibold whitespace-nowrap transition-colors sm:min-h-10",
                 category === c.id
                   ? "bg-primary text-primary-foreground"
                   : "bg-surface-2 text-muted-foreground hover:text-foreground",
