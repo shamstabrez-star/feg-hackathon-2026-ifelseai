@@ -42,7 +42,7 @@ test.describe("Casino rail — eligibility", () => {
 
     const menu = page.getByRole("button", { name: "Open navigation" });
     if (await menu.isVisible()) await menu.click();
-    await page.getByRole("link", { name: "Casino", exact: true }).first().click();
+    await page.getByRole("link", { name: "CASINO", exact: true }).first().click();
 
     const track = rail(page);
     await track.first().waitFor();
